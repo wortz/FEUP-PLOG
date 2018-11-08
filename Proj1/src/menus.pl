@@ -1,33 +1,6 @@
 start :-
     printMainMenu,
     askOption,
-    read(Input),
-    mainMenuInput(Input).
-
-askOption :-
-write('> Insert your option ').
-
-mainMenuInput(1) :-
-    startGame('P','P').
-
-mainMenuInput(2) :-
-    write('\nNot Working Yet...\n\n'),
-    start.
-
-mainMenuInput(3) :-
-    write('\nNot Working Yet...\n\n'),
-    start.
-
-mainMenuInput(4) :-
-    printRulesMenu.
-
-mainMenuInput(0) :-
-    write('\nThank You, Come Again ....\n\n').
-
-mainMenuInput(_Other) :-
-    write('\nERROR: that option does not exist.\n\n'),
-    askOption,
-    read(Input),
     mainMenuInput(Input).
 
 printMainMenu :-

@@ -20,7 +20,7 @@ gameLoop(Board) :-
     movePiece(Board,NewBoard,1),
     display_game(NewBoard),
     movePiece(NewBoard,RoundBoard,2),
-    display_game(RoundBoard)
+    display_game(RoundBoard),
     gameLoop(RoundBoard).
 
 
