@@ -5,16 +5,14 @@ startGame(Player1, Player2) :-
 
 movePiece(Board,NewBoard,Simbol) :-
     write('Which piece you would like to move?\n'),
+    askRow(Row),
     askColumn(Column),
     numberColumn(Column,NumColumn),
-    write(Column),nl,
-    write(NumColumn),
-    askRow(Row),
     replaceRows(Board,Row,NumColumn,0,AuxBoard),
     write('To where?\n'),
+    askRow(Row1),
     askColumn(Column1),
     numberColumn(Column1,NumColumn1),
-    askRow(Row1),
     replaceRows(AuxBoard,Row1,NumColumn1,Simbol,NewBoard).
 
 

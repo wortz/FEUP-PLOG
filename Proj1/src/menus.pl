@@ -70,7 +70,7 @@ printRulesMenu :-
     write('|  3.As pecas apenas se movem na horizontal ou vertical.                  |'),nl,
     write('|  4.Podem mover cada peca quantas casas forem possiveis nessas direcoes. |'),nl,
     write('|  5.Nao se pode passar por cima das outras pecas(inimigas ou suas).      |'),nl,
-    write('|  6.As coordenadas vao ser pedidas, primeiro a letra depois o numero.    |'),nl,
+    write('|  6.As coordenadas vao ser pedidas, primeiro o numero depois a letra.    |'),nl,
     write('|  7.Primeiro insere as coordenadas da peca que quer mover.               |'),nl,
     write('|  8.Depois as coordenadas da casa para onde a peca pode ir.              |'),nl,
     write('|  9.No caso de inserir coordenadas erradas ou invalidas volta ao ponto 7.|'),nl,
