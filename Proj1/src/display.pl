@@ -1,6 +1,6 @@
 :-include('boards.pl').
 
-printLetters:-write(' | H | G | F | E | D | C | B | A | '), nl.
+printLetters:-write(' | h | g | f | e | d | c | b | a | '), nl.
 
 printSeparator:-write('___________________________________'), nl.
 
