@@ -4,16 +4,25 @@ startGame(Player1, Player2) :-
     gameLoop(InitialBoard).
 
 movePiece(Board,NewBoard,Simbol) :-
-    write('Which piece you would like to move?\n'),
-    askRow(Row),
-    askColumn(Column),
-    numberColumn(Column,NumColumn),
+    choosePiece(Board,Row,NumColumn,Column,Simbol),
     replaceRows(Board,Row,NumColumn,0,AuxBoard),
     write('To where?\n'),
     askRow(Row1),
     askColumn(Column1),
     numberColumn(Column1,NumColumn1),
     replaceRows(AuxBoard,Row1,NumColumn1,Simbol,NewBoard).
+
+choosePiece(Board,Row,NumColumn,Column,Simbol) :-
+    write('Which piece you would like to move?\n'),
+    askRow(Row),
+    askColumn(Column),
+    write(Row),
+    write(Column),nl,
+    write(Simbol),nl,
+    numberColumn(Column,NumColumnAux),
+    NumColumn=NumColumnAux,
+    write(NumColumn),nl,
+    checkPiece(Board,Row,NumColumn,Column,Simbol).
 
 
 gameLoop(Board) :-
@@ -22,6 +31,15 @@ gameLoop(Board) :-
     movePiece(NewBoard,RoundBoard,2),
     display_game(RoundBoard),
     gameLoop(RoundBoard).
+
+checkPiece(Board,Row,NumColumn,Column,Simbol) :-
+    nth1(Row,Board,List),
+    write(List),nl,
+    nth1(NumColumn,List,Value),
+    write(Value),nl,
+    (Value \= Simbol ->
+        (write('Not a valid piece or not your piece. Choose Again.\n'),
+        choosePiece(Board,Row,NumColumn,Column,Simbol))).
 
 
 
