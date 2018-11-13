@@ -1,6 +1,6 @@
 start :-
     printMainMenu,
-    askOption,
+    askOption(Input),
     mainMenuInput(Input).
 
 printMainMenu :-

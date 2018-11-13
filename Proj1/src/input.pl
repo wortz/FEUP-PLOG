@@ -1,4 +1,4 @@
-askOption :-
+askOption(Input) :-
     write('> Insert your option '),
     read(Input).
 
@@ -21,8 +21,7 @@ mainMenuInput(0) :-
 
 mainMenuInput(_Other) :-
     write('\nERROR: that option does not exist.\n\n'),
-    askOption,
-    read(Input),
+    askOption(Input),
     mainMenuInput(Input).
 
 askRow(Row) :-
