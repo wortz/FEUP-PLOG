@@ -4,10 +4,9 @@ startGame(Player1, Player2) :-
     gameLoop(InitialBoard).
 
 movePiece(Board,NewBoard,Simbol) :-
-    choosePiece(Board,Simbol,Row,NumColumn),
-    checkPiece(Board,Row,NumColumn,Simbol,CheckBool),
-    (CheckBool==1 -> replaceRows(Board,Row,NumColumn,0,NewBoard);
-    movePiece(Board,NewBoard,Simbol)).
+    choosePiece(Board,Simbol,Row,NumColumn),!,
+    ((checkPiece(Board,Row,NumColumn,Simbol,NewBoard) -> movePiece(Board, NewBoard,Simbol));
+    replaceRows(Board,Row,NumColumn,0,NewBoard)).
 
 choosePiece(Board,Simbol,Row,NumColumn) :-
     write('Which piece you would like to move?\n'),
@@ -23,12 +22,15 @@ gameLoop(Board) :-
     display_game(RoundBoard),
     gameLoop(RoundBoard).
 
-checkPiece(Board,Row,NumColumn,Simbol,CheckBool) :-
+checkPiece(Board,Row,NumColumn,Simbol,NewBoard) :-
     nth1(Row,Board,List),
     nth1(NumColumn,List,Value),
-    (Value == Simbol -> 
-    CheckBool=1;
-    CheckBool=0).
+    write('Value is '),write(Value),nl,
+    write('Simbol is '),write(Simbol),nl,
+    Value \= Simbol,
+    write('bota').
+
+    
 
 
 
