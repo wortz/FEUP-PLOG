@@ -3,17 +3,24 @@ startGame(Player1, Player2) :-
     display_game(InitialBoard),
     gameLoop(InitialBoard).
 
-movePiece(Board,NewBoard,Simbol) :-
-    choosePiece(Board,Simbol,Row,NumColumn),!,
-    ((checkPiece(Board,Row,NumColumn,Simbol,NewBoard) -> movePiece(Board, NewBoard,Simbol));
-    replaceRows(Board,Row,NumColumn,0,NewBoard)).
-
-choosePiece(Board,Simbol,Row,NumColumn) :-
+movePiece(Board,NewBoard,Symbol) :-
     write('Which piece you would like to move?\n'),
-    askRow(Row),
+    chooseCell(Row,NumColumn),!,
+    ((checkCell(Board,Row,NumColumn,Symbol) -> movePiece(Board, NewBoard,Symbol));
+    (replaceRows(Board,Row,NumColumn,0,BoardAux),
+    chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn))).
+
+chooseDest(Board,NewBoard,Symbol,Row,NumColumn) :-
+    write('To Where?\n'),
+    chooseCell(Row1,NumColumn1),!,
+    ((checkCell(Board,Row1,NumColumn1,0) -> chooseDest(Board, NewBoard,Symbol));
+    replaceRows(Board,Row1,NumColumn1,Symbol,NewBoard)).
+
+chooseCell(Row,NumColumn) :-
+    askRow(RowAux),
+    numberRow(RowAux,Row),
     askColumn(Column),
     numberColumn(Column,NumColumn).
-
 
 gameLoop(Board) :-
     movePiece(Board,NewBoard,1),
@@ -22,13 +29,10 @@ gameLoop(Board) :-
     display_game(RoundBoard),
     gameLoop(RoundBoard).
 
-checkPiece(Board,Row,NumColumn,Simbol,NewBoard) :-
+checkCell(Board,Row,NumColumn,Symbol) :-
     nth1(Row,Board,List),
     nth1(NumColumn,List,Value),
-    write('Value is '),write(Value),nl,
-    write('Simbol is '),write(Simbol),nl,
-    Value \= Simbol,
-    write('bota').
+    Value \= Symbol.
 
     
 
