@@ -32,16 +32,23 @@ askColumn(Column) :-
     write(' what column (Letter):\n'),
     read(Column).
 
-numberColumn('h',1).
-numberColumn('g',2).
-numberColumn('f',3).
-numberColumn('e',4).
-numberColumn('d',5).
-numberColumn('c',6).
-numberColumn('b',7).
-numberColumn('a',8).
+numberColumn(Column,NumColumn) :-
+    char_code('a',Num1), char_code(Column,Num2),
+    NumColumn is ( Num1-Num2 + 8),
+    NumColumn > 0, NumColumn <9.
+
 
 numberColumn(_Column,NumColumn) :-
     write('That Column is not valid!\n'),
     askColumn(Input),
     numberColumn(Input,NumColumn).
+
+numberRow(RowInput,Row):-
+    (\+ integer(RowInput);
+    (RowInput <1;
+     RowInput>8),
+     write('That Row is not valid!\n'),
+     askRow(Input),
+     numberRow(Input,Row));
+     (RowInput>0,
+     RowInput<9).
