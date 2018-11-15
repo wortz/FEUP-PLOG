@@ -36,5 +36,14 @@ traduz(0,' ').
 traduz(1,'R').
 traduz(2,'W').
 
+print_list([]).
+print_list([L|T]) :-
+	print_listAux(L),
+	nl,
+	print_list(T).
 
+print_listAux([]).
+print_listAux([L|T]) :-
+	write(L),
+	print_listAux(T).
 

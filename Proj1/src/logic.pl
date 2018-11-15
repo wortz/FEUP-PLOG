@@ -5,16 +5,17 @@ startGame(Player1, Player2) :-
 
 movePiece(Board,NewBoard,Symbol) :-
     write('Which piece you would like to move?\n'),
-    chooseCell(Row,NumColumn),!,
+    chooseCell(Row,NumColumn),
     ((checkCell(Board,Row,NumColumn,Symbol) -> movePiece(Board, NewBoard,Symbol));
     (replaceRows(Board,Row,NumColumn,0,BoardAux),
     chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn))).
 
 chooseDest(Board,NewBoard,Symbol,Row,NumColumn) :-
+    listValidMoves(Board,Row,NumColumn,MovesList),
     write('To Where?\n'),
-    chooseCell(Row1,NumColumn1),!,
-    ((checkCell(Board,Row1,NumColumn1,0) -> chooseDest(Board, NewBoard,Symbol));
-    replaceRows(Board,Row1,NumColumn1,Symbol,NewBoard)).
+    chooseCell(Row1,NumColumn1),
+    ((checkValidMove(MovesList,Row1,NumColumn1) -> replaceRows(Board,Row1,NumColumn1,Symbol,NewBoard));
+    chooseDest(Board,NewBoard,Symbol,Row,NumColumn)).
 
 chooseCell(Row,NumColumn) :-
     askRow(RowAux),
@@ -31,10 +32,64 @@ gameLoop(Board) :-
 
 checkCell(Board,Row,NumColumn,Symbol) :-
     nth1(Row,Board,List),
-    nth1(NumColumn,List,Value),
+    nth1(NumColumn,List,Value),!,
     Value \= Symbol.
 
-    
+listValidMoves(Board,Row,NumColumn,MovesList):-
+    listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
+    listColumnUp(Board,MovesList2,Row,NumColumn,TempMovesList1),
+    listRowRight(Board,MovesList3,Row,NumColumn,TempMovesList2),
+    listRowLeft(Board,MovesList4,Row,NumColumn,TempMovesList3),
+    append(MovesList1,MovesList2,MovesListAux),
+    append(MovesListAux,MovesList3,MovesListAux1),
+    append(MovesListAux1,MovesList4,MovesList),
+    write('You can move the piece to : \n'),
+    print_list(MovesList).
+
+listColumnDown(Board,FinalList,Row,NumColumn,ListTemp) :-
+    Row1 is Row + 1,
+    ((Row1 < 9 , \+ checkCell(Board,Row1,NumColumn,0))
+    -> (
+        numberColumn(Column,NumColumn),
+        append(ListTemp,[[Row1,Column]],ListAux),
+        listColumnDown(Board,FinalList,Row1,NumColumn,ListAux));
+    append([],ListTemp,FinalList)).
+
+listColumnUp(Board,FinalList,Row,NumColumn,ListTemp) :-
+    Row1 is Row - 1,
+    ((Row1 > 0 , \+ checkCell(Board,Row1,NumColumn,0))
+    -> (
+        numberColumn(Column,NumColumn),
+        append(ListTemp,[[Row1,Column]],ListAux),
+        listColumnUp(Board,FinalList,Row1,NumColumn,ListAux));
+    append([],ListTemp,FinalList)).
+
+listRowRight(Board,FinalList,Row,NumColumn,ListTemp) :-
+    NumColumn1 is NumColumn + 1,
+    ((NumColumn1 < 9 , \+ checkCell(Board,Row,NumColumn1,0))
+    -> (
+        numberColumn(Column,NumColumn1),
+        append(ListTemp,[[Row,Column]],ListAux),
+        listRowRight(Board,FinalList,Row,NumColumn1,ListAux));
+    append([],ListTemp,FinalList)).
+
+
+listRowLeft(Board,FinalList,Row,NumColumn,ListTemp) :-
+    NumColumn1 is NumColumn - 1,
+    ((NumColumn1 > 0 , \+ checkCell(Board,Row,NumColumn1,0))
+    -> (
+        numberColumn(Column,NumColumn1),
+        append(ListTemp,[[Row,Column]],ListAux),
+        listRowLeft(Board,FinalList,Row,NumColumn1,ListAux));
+    append([],ListTemp,FinalList)).
+
+
+checkValidMove(MovesList,Row2b,NumColumn2b):-
+    numberColumn(Column2b,NumColumn2b),
+    append([],[Row2b,Column2b],Move),!,
+    member(Move,MovesList).
+
+
 
 
 
