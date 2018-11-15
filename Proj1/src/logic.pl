@@ -26,6 +26,7 @@ chooseCell(Row,NumColumn) :-
 gameLoop(Board) :-
     movePiece(Board,NewBoard,1),
     display_game(NewBoard),
+    checkWin([[1,3],[1,4],[1,5],[1,6]]),
     movePiece(NewBoard,RoundBoard,2),
     display_game(RoundBoard),
     gameLoop(RoundBoard).
@@ -90,16 +91,35 @@ checkValidMove(MovesList,Row2b,NumColumn2b):-
     member(Move,MovesList).
 
 
-checkWin(PiecesPositionsList, Row, NumColumn):-
-    nth1(Index,PiecesPositionsList,[Row,NumColumn]), 
+checkWin(PiecesPositionsList):-
+    distanceBetween2(1,2,PiecesPositionsList,DistanceList,ListTemp),
+    print_listAux(DistanceList).
     
 
-distanceBetween2(PieceIndex, OtherPieceIndex):-
+
+
+    
+distanceBetween2(PieceIndex,5, PiecesPositionsList,DistanceList,DistanceListAux):-
+    (PieceIndex < 4,
+    PieceIndex1 is PieceIndex + 1,
+    OtherPieceIndex1 is PieceIndex1 + 1,
+    distanceBetween2(PieceIndex1,OtherPieceIndex1, PiecesPositionsList,DistanceList,DistanceListAux));
+    append([],DistanceListAux,DistanceList).
+
+distanceBetween2(PieceIndex,OtherPieceIndex, PiecesPositionsList,DistanceList,DistanceListAux):-
+    OtherPieceIndex < 5,
+    OtherPieceIndex1 is OtherPieceIndex +1,
+    nth1(PieceIndex,PiecesPositionsList,Coords1),
+    nth1(OtherPieceIndex,PiecesPositionsList,Coords2),
+    distance(Coords1,Coords2,Distance),
+    append(DistanceListAux,[Distance],DistanceListAux1),
+    distanceBetween2(PieceIndex,OtherPieceIndex1,PiecesPositionsList,DistanceList,DistanceListAux1).
+
 
   
-distance(Row1,NumColumn1, Row2, NumColumn2, Distance):-
-    Row is (Row2-Row1)^2,
-    NumColumn is (NumColumn2-NumColumn1)^2,
+distance([H1|T1], [H2|T2], Distance):-
+    Row is (H2-H1)^2,
+    NumColumn is (T2-T1)^2,
     Distance is sqrt(Row + NumColumn).    
 
 replaceColumns([_|T], 1, Value, [Value|T]).
