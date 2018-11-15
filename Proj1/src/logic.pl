@@ -90,8 +90,17 @@ checkValidMove(MovesList,Row2b,NumColumn2b):-
     member(Move,MovesList).
 
 
+checkWin(PiecesPositionsList, Row, NumColumn):-
+    nth1(Index,PiecesPositionsList,[Row,NumColumn]), 
+    
 
+distanceBetween2(PieceIndex, OtherPieceIndex):-
 
+  
+distance(Row1,NumColumn1, Row2, NumColumn2, Distance):-
+    Row is (Row2-Row1)^2,
+    NumColumn is (NumColumn2-NumColumn1)^2,
+    Distance is sqrt(Row + NumColumn).    
 
 replaceColumns([_|T], 1, Value, [Value|T]).
 replaceColumns([C|T], Column, Value, [C|TNew]) :-
