@@ -51,39 +51,39 @@ listValidMoves(Board,Row,NumColumn,MovesList):-
 
 listColumnDown(Board,FinalList,Row,NumColumn,ListTemp) :-
     Row1 is Row + 1,
-    ((Row1 < 9 ,  checkCell(Board,Row1,NumColumn,0))
-    -> (
-        numberColumn(Column,NumColumn),
-        append(ListTemp,[[Row1,Column]],ListAux),
-        listColumnDown(Board,FinalList,Row1,NumColumn,ListAux));
+    ((Row1 < 9,
+    checkCell(Board,Row1,NumColumn,0),
+    numberColumn(Column,NumColumn),
+    append(ListTemp,[[Row1,Column]],ListAux),
+    listColumnDown(Board,FinalList,Row1,NumColumn,ListAux));
     append([],ListTemp,FinalList)).
 
 listColumnUp(Board,FinalList,Row,NumColumn,ListTemp) :-
     Row1 is Row - 1,
-    ((Row1 > 0 ,  checkCell(Board,Row1,NumColumn,0))
-    -> (
-        numberColumn(Column,NumColumn),
-        append(ListTemp,[[Row1,Column]],ListAux),
-        listColumnUp(Board,FinalList,Row1,NumColumn,ListAux));
+    ((Row1 > 0, 
+    checkCell(Board,Row1,NumColumn,0),
+    numberColumn(Column,NumColumn),
+    append(ListTemp,[[Row1,Column]],ListAux),
+    listColumnUp(Board,FinalList,Row1,NumColumn,ListAux));
     append([],ListTemp,FinalList)).
 
 listRowRight(Board,FinalList,Row,NumColumn,ListTemp) :-
     NumColumn1 is NumColumn + 1,
-    ((NumColumn1 < 9 ,  checkCell(Board,Row,NumColumn1,0))
-    -> (
-        numberColumn(Column,NumColumn1),
-        append(ListTemp,[[Row,Column]],ListAux),
-        listRowRight(Board,FinalList,Row,NumColumn1,ListAux));
+    ((NumColumn1 < 9,
+    checkCell(Board,Row,NumColumn1,0),
+    numberColumn(Column,NumColumn1),
+    append(ListTemp,[[Row,Column]],ListAux),
+    listRowRight(Board,FinalList,Row,NumColumn1,ListAux));
     append([],ListTemp,FinalList)).
 
 
 listRowLeft(Board,FinalList,Row,NumColumn,ListTemp) :-
     NumColumn1 is NumColumn - 1,
-    ((NumColumn1 > 0 ,  checkCell(Board,Row,NumColumn1,0))
-    -> (
-        numberColumn(Column,NumColumn1),
-        append(ListTemp,[[Row,Column]],ListAux),
-        listRowLeft(Board,FinalList,Row,NumColumn1,ListAux));
+    ((NumColumn1 > 0,
+    checkCell(Board,Row,NumColumn1,0),
+    numberColumn(Column,NumColumn1),
+    append(ListTemp,[[Row,Column]],ListAux),
+    listRowLeft(Board,FinalList,Row,NumColumn1,ListAux));
     append([],ListTemp,FinalList)).
 
 
