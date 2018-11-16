@@ -27,7 +27,7 @@ chooseCell(Row,NumColumn) :-
 
 gameLoop(Board) :-
     movePiece(Board,NewBoard,1),
-    display_game(NewBoard),
+    display_game(NewBoard),!,
     checkWin([[3,8],[1,6],[3,4],[5,6]]),
     movePiece(NewBoard,RoundBoard,2),
     display_game(RoundBoard),
@@ -97,11 +97,11 @@ checkWin(PiecesPositionsList):-
     checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),
     (!,RowSpan>4,
     ColumnSpan>4,
-    distanceBetween2(1,2,PiecesPositionsList,DistanceList,ListTemp),
-   
-    samsort(DistanceList,Sorted),
-
-    print_listAux(Sorted)).
+    distanceBetween2(1,2,PiecesPositionsList,DistanceList,ListTemp),!,
+    isSquare(DistanceList),
+    isRotated(PiecesPositionsList),
+    write('GANHASTE CARALHO')
+   ).
     
 
     
@@ -123,11 +123,7 @@ distanceBetween2(PieceIndex,OtherPieceIndex, PiecesPositionsList,DistanceList,Di
 
 checkSpan([],BiggestRow,BiggestColumn,SmallestRow,SmallestColumn, RowSpan, ColumnSpan):-
     RowSpan is (BiggestRow-SmallestRow+1),
-    ColumnSpan is (BiggestColumn-SmallestColumn+1),
-    write('Rowspan '), write(RowSpan),nl,
-    write('ColumnSpan '), write(ColumnSpan),nl,
-    write('BiggestRow '), write(BiggestRow),nl,
-    write('BiggestColumn '), write(BiggestColumn),nl.
+    ColumnSpan is (BiggestColumn-SmallestColumn+1).
 checkSpan([H|T], BiggestRow,BiggestColumn,SmallestRow,SmallestColumn,RowSpan, ColumnSpan):-
     nth1(1,H,Row),
     nth1(2,H,Column),
@@ -156,8 +152,25 @@ distance([H1|T1], [H2|T2], Distance):-
     Distance is sqrt(Row + NumColumn).  
 
 isSquare(DistanceList):-
-    samsort(DistanceList,Sorted).
+    !,sort(DistanceList,Sorted),
+    length(Sorted, Length),
+    Length =:= 2,
+    checkDiagonal(Sorted).
 
+checkDiagonal([H|T]):-
+    !,Hipotenusa is (H^2 +H^2),
+   %% format(Hipotenusa1,'~4f', Hipotenusa),
+    HipotenusaGoal is (T^2),
+    Erro is abs(Hipotenusa-HipotenusaGoal),
+    write(Erro),nl,
+    Erro < 0.00000000001.
+
+isRotated([], Row1, Column1).
+isRotated([H|T]):-
+    nth1(1,H,Row),
+    nth1(2,H,Column),
+    \+ (member([_,Column],T),
+    member([Row,_],T)).
 
 
 replaceColumns([_|T], 1, Value, [Value|T]).
