@@ -25,18 +25,34 @@ chooseCell(Row,NumColumn) :-
     askColumn(Column),
     numberColumn(Column,NumColumn),!.
 
-gameLoop(Board) :-
-    movePiece(Board,NewBoard,1),
-    display_game(NewBoard),!,
-    checkWin([[3,8],[1,6],[3,4],[5,6]]),
-    movePiece(NewBoard,RoundBoard,2),
-    display_game(RoundBoard),
-    gameLoop(RoundBoard).
-
 checkCell(Board,Row,NumColumn,Symbol) :-
     nth1(Row,Board,List),
     nth1(NumColumn,List,Value),!,
     Value =:= Symbol.
+
+gameLoop(Board) :-
+    movePiece(Board,NewBoard,1),
+    display_game(NewBoard),
+    (checkWin([[1,1],[1,5],[5,1],[5,5]]);
+    (movePiece(NewBoard,RoundBoard,2),
+    display_game(RoundBoard),
+    gameLoop(RoundBoard))).
+
+getPiecesList(Board,Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
+    Row1 is Row + 1,
+    ((Row1 < 9,
+    nth1(Row1,Board,List),
+    getPiecesListAux(List,Symbol,PiecesPositionsListAux,PiecesPositionsList1,Row1,0),
+    getPiecesList(Board,Symbol,PiecesPositionsList,));
+    append([],PiecesPositionsListAux,PiecesPositionsList)).
+
+getPiecesListAux(List,Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Row,NumColum) :-
+    nth1(NumColum,List,Value),
+    ((Value==Symbol,
+    append(PiecesPositionsListAux,[Row,NumColum],PiecesPositionsListTemp),
+
+    getPiecesListAux(Board,Symbol,PiecesPositionsList,PiecesPositionsListTemp,Row1,NumColum1).
+    
 
 listValidMoves(Board,Row,NumColumn,MovesList):-
     listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
@@ -94,12 +110,12 @@ checkValidMove(MovesList,Row2b,NumColumn2b):-
 
 
 checkWin(PiecesPositionsList):-
-    checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),
-    (!,RowSpan>4,
+    checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),!,
+    (RowSpan>4,
     ColumnSpan>4,
     distanceBetween2(1,2,PiecesPositionsList,DistanceList,ListTemp),!,
-    isSquare(DistanceList),
-    isRotated(PiecesPositionsList),
+    (isSquare(DistanceList),
+    isRotated(PiecesPositionsList)),
     write('GANHASTE CARALHO')
    ).
     
@@ -152,17 +168,15 @@ distance([H1|T1], [H2|T2], Distance):-
     Distance is sqrt(Row + NumColumn).  
 
 isSquare(DistanceList):-
-    !,sort(DistanceList,Sorted),
+    sort(DistanceList,Sorted),
     length(Sorted, Length),
     Length =:= 2,
     checkDiagonal(Sorted).
 
 checkDiagonal([H|T]):-
-    !,Hipotenusa is (H^2 +H^2),
-   %% format(Hipotenusa1,'~4f', Hipotenusa),
+    Hipotenusa is (H^2 +H^2),
     HipotenusaGoal is (T^2),
     Erro is abs(Hipotenusa-HipotenusaGoal),
-    write(Erro),nl,
     Erro < 0.00000000001.
 
 isRotated([], Row1, Column1).
@@ -171,6 +185,8 @@ isRotated([H|T]):-
     nth1(2,H,Column),
     \+ (member([_,Column],T),
     member([Row,_],T)).
+
+
 
 
 replaceColumns([_|T], 1, Value, [Value|T]).
