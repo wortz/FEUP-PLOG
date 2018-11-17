@@ -3,8 +3,9 @@
 :-include('display.pl').
 :-include('boards.pl').
 :-include('input.pl').
+:-include('bot.pl').
 :-use_module(library(lists)).
-:-use_module(library(samsort)).
+:-use_module(library(random)).
 
 quartetto :-
     start.
