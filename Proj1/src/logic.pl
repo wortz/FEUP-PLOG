@@ -8,14 +8,14 @@ startGame() :-
 %%  1. Current game board
 gameLoop(Board) :-
     movePiece(Board,NewBoard,1),
-    getPiecesList(NewBoard,1,PiecesPositionsList,0,0),
+    getPiecesList(NewBoard,1,PiecesPositionsList,PiecesPositionsListAux,0),
     display_game(NewBoard),
-    (checkWin([[1,1],[1,5],[5,1],[5,5]]);
+    (checkWin(PiecesPositionsList);
     (movePiece(NewBoard,RoundBoard,2),
     display_game(RoundBoard),
     gameLoop(RoundBoard))).
 
-%% Moves a player´s piece when input is valid.          
+%% Moves a player´s piece.          
 %%  1. Current game board state 
 %%  2. Board after piece is picked
 %%  3. Symbol representing player 
@@ -27,6 +27,12 @@ movePiece(Board,NewBoard,Symbol) :-
     replaceRows(Board,Row,NumColumn,0,BoardAux),
     chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn).
 
+%% Lists and chooses piece destination and updates game board.
+%%  1. Game board
+%%  2. Updated game board
+%%  3. Symbol representing a player
+%%  4. Row of the piece to be moved 
+%%  5. Column of the piece to be moved 
 chooseDest(Board,NewBoard,Symbol,Row,NumColumn) :-
     listValidMoves(Board,Row,NumColumn,MovesList),
     repeat,
@@ -35,34 +41,60 @@ chooseDest(Board,NewBoard,Symbol,Row,NumColumn) :-
     checkValidMove(MovesList,Row1,NumColumn1),!,
     replaceRows(Board,Row1,NumColumn1,Symbol,NewBoard).
 
+%% Handles user input.
+%%  1. Row number chosen
+%%  2. Column number of column chosen
 chooseCell(Row,NumColumn) :-
     askRow(RowAux),
     numberRow(RowAux,Row),
     askColumn(Column),
     numberColumn(Column,NumColumn),!.
 
+%% Checks if [Row,NumColumn] cell in Board is Symbol.
+%%  1. Current game board
+%%  2. Row to be checked
+%%  3. Column Number to be checked
+%%  4. Symbol to be checked for
 checkCell(Board,Row,NumColumn,Symbol) :-
     nth1(Row,Board,List),
     nth1(NumColumn,List,Value),!,
     Value =:= Symbol.
 
-
-getPiecesList([H|T],Symbol,PiecesPositionsList,Row,Counter) :-
+%% Finds all player´s pieces.
+%%  1. List to be checked (board)
+%%  2. Symbol that represents player
+%%  3. Pieces´ positions list 
+%%  4. Auxiliary pieces´ positions list
+%%  5. Current Row being checked
+getPiecesList([H|T],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
     Row1 is Row + 1,
+    length(PiecesPositionsListAux,Counter),
     ((Row1 < 9,
     Counter<4,
-    getPiecesListAux(H, Row1, 0, Counter, Symbol,PiecesPositionsList),
-    getPiecesList(T,Symbol,PiecesPositionsList,Row1,Counter));    
-    write(PiecesPositionsList)).
+    getPiecesListAux(H, Row1, 0,Symbol,PiecesPositionsListTemp,PiecesPositionsListTemp1,Counter),
+    append(PiecesPositionsListAux,PiecesPositionsListTemp,PiecesPositionsListAux1),
+    getPiecesList(T,Symbol,PiecesPositionsList,PiecesPositionsListAux1,Row1));    
+    append([],PiecesPositionsListAux,PiecesPositionsList),print_list(PiecesPositionsList)).
 
-getPiecesListAux([], Row, Column, Counter, Symbol,PiecesPositionsList).
-getPiecesListAux([H|T], Row, Column, Counter, Symbol,PiecesPositionsList):-
+%% Finds all player´s pieces in a given row.
+%%  1. List to be checked (board´s row)
+%%  2. Current Row being checked
+%%  3. Current Column number being checked
+%%  4. Symbol that represents player
+%%  5. Pieces´ positions list 
+%%  6. Auxiliary pieces´ positions list
+%%  7. Number of pieces found
+getPiecesListAux([], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter):-
+    append([],PiecesPositionsListTemp,PiecesPositionsListAux).
+getPiecesListAux([H|T], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter):-
     Column1 is Column+1,
-    ((H =:= Symbol,
-    append(PiecesPositionsList,[Row,Column1],PiecesPositionsListTemp),
-    Counter1 is Counter +1,
-    getPiecesListAux(T, Row, Column1, Counter1, Symbol,PiecesPositionsListTemp));
-    getPiecesListAux(T, Row, Column1, Counter, Symbol,PiecesPositionsList)).
+    ((Counter < 4,
+    (H =:= Symbol,
+    Counter1 is Counter + 1,
+    append(PiecesPositionsListTemp,[[Row,Column1]],PiecesPositionsListTemp1),
+    getPiecesListAux(T, Row, Column1, Symbol,PiecesPositionsListAux, PiecesPositionsListTemp1,Counter1));
+    getPiecesListAux(T, Row, Column1, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter)));
+    getPiecesListAux([],Row,Column1,Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter)).
 
 listValidMoves(Board,Row,NumColumn,MovesList):-
     listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
@@ -216,6 +248,5 @@ replaceRows([L|T], Row, Column, Value, [L|TNew]) :-
 
 
 %% TODO: mudar para unicode
-%% TODO:falta verificar se e quadrado e se esta rodado checkWin
 %% TODO: disclaimers e infos
 %% TODO: bots...............................................
