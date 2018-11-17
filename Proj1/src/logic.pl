@@ -1,8 +1,24 @@
-startGame(Player1, Player2) :-
+%% Initiates game board and enters the loop.
+startGame() :-
     initialBoard(InitialBoard),
     display_game(InitialBoard),
     gameLoop(InitialBoard).
 
+%% Handles the game loop
+%%  1. Current game board
+gameLoop(Board) :-
+    movePiece(Board,NewBoard,1),
+    getPiecesList(NewBoard,1,PiecesPositionsList,0,0),
+    display_game(NewBoard),
+    (checkWin([[1,1],[1,5],[5,1],[5,5]]);
+    (movePiece(NewBoard,RoundBoard,2),
+    display_game(RoundBoard),
+    gameLoop(RoundBoard))).
+
+%% Moves a player´s piece when input is valid.          
+%%  1. Current game board state 
+%%  2. Board after piece is picked
+%%  3. Symbol representing player 
 movePiece(Board,NewBoard,Symbol) :-
     repeat,
     write('Which piece you would like to move?\n'),
@@ -30,29 +46,23 @@ checkCell(Board,Row,NumColumn,Symbol) :-
     nth1(NumColumn,List,Value),!,
     Value =:= Symbol.
 
-gameLoop(Board) :-
-    movePiece(Board,NewBoard,1),
-    display_game(NewBoard),
-    (checkWin([[1,1],[1,5],[5,1],[5,5]]);
-    (movePiece(NewBoard,RoundBoard,2),
-    display_game(RoundBoard),
-    gameLoop(RoundBoard))).
 
-getPiecesList(Board,Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
+getPiecesList([H|T],Symbol,PiecesPositionsList,Row,Counter) :-
     Row1 is Row + 1,
     ((Row1 < 9,
-    nth1(Row1,Board,List),
-    getPiecesListAux(List,Symbol,PiecesPositionsListAux,PiecesPositionsList1,Row1,0),
-    getPiecesList(Board,Symbol,PiecesPositionsList,));
-    append([],PiecesPositionsListAux,PiecesPositionsList)).
+    Counter<4,
+    getPiecesListAux(H, Row1, 0, Counter, Symbol,PiecesPositionsList),
+    getPiecesList(T,Symbol,PiecesPositionsList,Row1,Counter));    
+    write(PiecesPositionsList)).
 
-getPiecesListAux(List,Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Row,NumColum) :-
-    nth1(NumColum,List,Value),
-    ((Value==Symbol,
-    append(PiecesPositionsListAux,[Row,NumColum],PiecesPositionsListTemp),
-
-    getPiecesListAux(Board,Symbol,PiecesPositionsList,PiecesPositionsListTemp,Row1,NumColum1).
-    
+getPiecesListAux([], Row, Column, Counter, Symbol,PiecesPositionsList).
+getPiecesListAux([H|T], Row, Column, Counter, Symbol,PiecesPositionsList):-
+    Column1 is Column+1,
+    ((H =:= Symbol,
+    append(PiecesPositionsList,[Row,Column1],PiecesPositionsListTemp),
+    Counter1 is Counter +1,
+    getPiecesListAux(T, Row, Column1, Counter1, Symbol,PiecesPositionsListTemp));
+    getPiecesListAux(T, Row, Column1, Counter, Symbol,PiecesPositionsList)).
 
 listValidMoves(Board,Row,NumColumn,MovesList):-
     listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
