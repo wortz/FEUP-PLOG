@@ -6,14 +6,17 @@ mainMenuInput(1) :-
     startGame('P','P').
 
 mainMenuInput(2) :-
-    write('\nNot Working Yet...\n\n'),
-    start.
+    startGame('P','C').
 
 mainMenuInput(3) :-
     write('\nNot Working Yet...\n\n'),
     start.
 
 mainMenuInput(4) :-
+    write('\nNot Working Yet...\n\n'),
+    start.
+
+mainMenuInput(5) :-
     printRulesMenu.
 
 mainMenuInput(0) :-

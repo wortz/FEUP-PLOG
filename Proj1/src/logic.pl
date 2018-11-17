@@ -2,11 +2,11 @@
 startGame(Player1,Player2) :-
     initialBoard(InitialBoard),
     display_game(InitialBoard),
-    gameLoop(InitialBoard).
+    gameLoop(InitialBoard,Player1,Player2).
 
 %% Handles the game loop
 %%  1. Current game board
-gameLoop(Board) :-
+gameLoop(Board,'P','P') :-
     movePiece(Board,NewBoard,1),
     getPiecesList(NewBoard,1,PiecesPositionsList1,PiecesPositionsListAux1,0),
     display_game(NewBoard),
@@ -17,6 +17,17 @@ gameLoop(Board) :-
     (checkWin(PiecesPositionsList2);
     gameLoop(RoundBoard)))).
 
+gameLoop(Board,'P','C') :-
+    movePiece(Board,NewBoard,1),
+    getPiecesList(NewBoard,1,PiecesPositionsList1,PiecesPositionsListAux1,0),
+    display_game(NewBoard),
+    (checkWin(PiecesPositionsList1);
+    (choose_move(NewBoard,RoundBoard,'EASY',2),
+    getPiecesList(RoundBoard,2,PiecesPositionsList2,PiecesPositionsListAux2,0),
+    display_game(RoundBoard),
+    (checkWin(PiecesPositionsList2);
+    gameLoop(RoundBoard,'P','C')))).
+
 %% Moves a player´s piece.          
 %%  1. Current game board state 
 %%  2. Board after piece is picked
@@ -25,9 +36,19 @@ movePiece(Board,NewBoard,Symbol) :-
     repeat,
     write('Which piece you would like to move?\n'),
     chooseCell(Row,NumColumn),
-    checkCell(Board,Row,NumColumn,Symbol),!,
+    ((checkCell(Board,Row,NumColumn,Symbol),
+    listValidMoves(Board,Row,NumColumn,MovesList),
+    validPiece(MovesList));
+    (write('Not a valid piece or with no moves! Choose again.\n'),
+    fail)),!,
     replaceRows(Board,Row,NumColumn,0,BoardAux),
-    chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn),!.
+    chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn,MovesList),!.
+
+%% Checks if the piece has valid moves.
+%%  1. List of the valid moves
+validPiece(MovesList) :-
+    length(MovesList,Size),!,
+    Size>0.
 
 %% Lists and chooses piece destination and updates game board.
 %%  1. Game board
@@ -35,12 +56,16 @@ movePiece(Board,NewBoard,Symbol) :-
 %%  3. Symbol representing a player
 %%  4. Row of the piece to be moved 
 %%  5. Column of the piece to be moved 
-chooseDest(Board,NewBoard,Symbol,Row,NumColumn) :-
-    listValidMoves(Board,Row,NumColumn,MovesList),
+%%  6. List of the valid moves
+chooseDest(Board,NewBoard,Symbol,Row,NumColumn,MovesList) :-
+    write('You can move the piece to : \n'),
+    print_list(MovesList),
     repeat,
     write('To Where?\n'),
     chooseCell(Row1,NumColumn1),
-    checkValidMove(MovesList,Row1,NumColumn1),!,
+    ((checkValidMove(MovesList,Row1,NumColumn1));
+    (write('Not a valid move for that piece! Choose again.\n'),
+    fail)),!,
     replaceRows(Board,Row1,NumColumn1,Symbol,NewBoard).
 
 %% Handles user input.
@@ -113,9 +138,7 @@ listValidMoves(Board,Row,NumColumn,MovesList):-
     listRowLeft(Board,MovesList4,Row,NumColumn,TempMovesList3),
     append(MovesList1,MovesList2,MovesListAux),
     append(MovesListAux,MovesList3,MovesListAux1),
-    append(MovesListAux1,MovesList4,MovesList),
-    write('You can move the piece to : \n'),
-    print_list(MovesList).
+    append(MovesListAux1,MovesList4,MovesList),!.
 
 %% List valid moves of a given piece in a downwards direction.
 %%  1. Current game board 
@@ -166,6 +189,7 @@ listRowLeft(Board,FinalList,Row,NumColumn,ListTemp) :-
 %%  1. List of legal moves
 %%  2. Row of the pretended move
 %%  3. Column of the pretended move
+
 checkValidMove(MovesList,Row2b,NumColumn2b):-
     numberColumn(Column2b,NumColumn2b),
     append([],[Row2b,Column2b],Move),!,
