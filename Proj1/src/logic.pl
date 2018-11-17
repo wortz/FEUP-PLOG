@@ -1,5 +1,5 @@
 %% Initiates game board and enters the loop.
-startGame() :-
+startGame(Player1,Player2) :-
     initialBoard(InitialBoard),
     display_game(InitialBoard),
     gameLoop(InitialBoard).
@@ -8,12 +8,14 @@ startGame() :-
 %%  1. Current game board
 gameLoop(Board) :-
     movePiece(Board,NewBoard,1),
-    getPiecesList(NewBoard,1,PiecesPositionsList,PiecesPositionsListAux,0),
+    getPiecesList(NewBoard,1,PiecesPositionsList1,PiecesPositionsListAux1,0),
     display_game(NewBoard),
-    (checkWin(PiecesPositionsList);
+    (checkWin(PiecesPositionsList1);
     (movePiece(NewBoard,RoundBoard,2),
+    getPiecesList(RoundBoard,2,PiecesPositionsList2,PiecesPositionsListAux2,0),
     display_game(RoundBoard),
-    gameLoop(RoundBoard))).
+    (checkWin(PiecesPositionsList2);
+    gameLoop(RoundBoard)))).
 
 %% Moves a player´s piece.          
 %%  1. Current game board state 
@@ -25,7 +27,7 @@ movePiece(Board,NewBoard,Symbol) :-
     chooseCell(Row,NumColumn),
     checkCell(Board,Row,NumColumn,Symbol),!,
     replaceRows(Board,Row,NumColumn,0,BoardAux),
-    chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn).
+    chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn),!.
 
 %% Lists and chooses piece destination and updates game board.
 %%  1. Game board
@@ -66,6 +68,9 @@ checkCell(Board,Row,NumColumn,Symbol) :-
 %%  3. Pieces´ positions list 
 %%  4. Auxiliary pieces´ positions list
 %%  5. Current Row being checked
+getPiecesList([],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
+    append([],PiecesPositionsListAux,PiecesPositionsList),
+    print_list(PiecesPositionsList).
 getPiecesList([H|T],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
     Row1 is Row + 1,
     length(PiecesPositionsListAux,Counter),
@@ -74,7 +79,7 @@ getPiecesList([H|T],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
     getPiecesListAux(H, Row1, 0,Symbol,PiecesPositionsListTemp,PiecesPositionsListTemp1,Counter),
     append(PiecesPositionsListAux,PiecesPositionsListTemp,PiecesPositionsListAux1),
     getPiecesList(T,Symbol,PiecesPositionsList,PiecesPositionsListAux1,Row1));    
-    append([],PiecesPositionsListAux,PiecesPositionsList),print_list(PiecesPositionsList)).
+    getPiecesList([],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row1)).
 
 %% Finds all player´s pieces in a given row.
 %%  1. List to be checked (board´s row)
@@ -89,13 +94,18 @@ getPiecesListAux([], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositionsL
 getPiecesListAux([H|T], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter):-
     Column1 is Column+1,
     ((Counter < 4,
-    (H =:= Symbol,
+    ((H =:= Symbol,
     Counter1 is Counter + 1,
     append(PiecesPositionsListTemp,[[Row,Column1]],PiecesPositionsListTemp1),
     getPiecesListAux(T, Row, Column1, Symbol,PiecesPositionsListAux, PiecesPositionsListTemp1,Counter1));
     getPiecesListAux(T, Row, Column1, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter)));
     getPiecesListAux([],Row,Column1,Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter)).
 
+%% Lists valid moves of a given piece.
+%%  1. Current game board
+%%  2. Row of the piece 
+%%  3. Number of the column of the piece
+%%  4. List of the valid moves
 listValidMoves(Board,Row,NumColumn,MovesList):-
     listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
     listColumnUp(Board,MovesList2,Row,NumColumn,TempMovesList1),
@@ -107,6 +117,12 @@ listValidMoves(Board,Row,NumColumn,MovesList):-
     write('You can move the piece to : \n'),
     print_list(MovesList).
 
+%% List valid moves of a given piece in a downwards direction.
+%%  1. Current game board 
+%%  2. List of the valid moves
+%%  3. Row of the piece
+%%  4. Number of the column of the piece
+%%  5. Auxiliary list
 listColumnDown(Board,FinalList,Row,NumColumn,ListTemp) :-
     Row1 is Row + 1,
     ((Row1 < 9,
@@ -116,6 +132,7 @@ listColumnDown(Board,FinalList,Row,NumColumn,ListTemp) :-
     listColumnDown(Board,FinalList,Row1,NumColumn,ListAux));
     append([],ListTemp,FinalList)).
 
+%% Equivalent to listColumnDown, but in a upwards direction.
 listColumnUp(Board,FinalList,Row,NumColumn,ListTemp) :-
     Row1 is Row - 1,
     ((Row1 > 0, 
@@ -125,6 +142,7 @@ listColumnUp(Board,FinalList,Row,NumColumn,ListTemp) :-
     listColumnUp(Board,FinalList,Row1,NumColumn,ListAux));
     append([],ListTemp,FinalList)).
 
+%% Equivalent to listColumnDown, but in a rightwards.
 listRowRight(Board,FinalList,Row,NumColumn,ListTemp) :-
     NumColumn1 is NumColumn + 1,
     ((NumColumn1 < 9,
@@ -134,7 +152,7 @@ listRowRight(Board,FinalList,Row,NumColumn,ListTemp) :-
     listRowRight(Board,FinalList,Row,NumColumn1,ListAux));
     append([],ListTemp,FinalList)).
 
-
+%% Equivalent to listColumnDown, but in a leftwards.
 listRowLeft(Board,FinalList,Row,NumColumn,ListTemp) :-
     NumColumn1 is NumColumn - 1,
     ((NumColumn1 > 0,
@@ -144,13 +162,17 @@ listRowLeft(Board,FinalList,Row,NumColumn,ListTemp) :-
     listRowLeft(Board,FinalList,Row,NumColumn1,ListAux));
     append([],ListTemp,FinalList)).
 
-
+%% Checks if it´s a valid move.
+%%  1. List of legal moves
+%%  2. Row of the pretended move
+%%  3. Column of the pretended move
 checkValidMove(MovesList,Row2b,NumColumn2b):-
     numberColumn(Column2b,NumColumn2b),
     append([],[Row2b,Column2b],Move),!,
     member(Move,MovesList).
 
-
+%% Checks if the winning condition is fulfilled
+%%  1. List of the positions of a player´s pieces
 checkWin(PiecesPositionsList):-
     checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),!,
     (RowSpan>4,
@@ -162,14 +184,18 @@ checkWin(PiecesPositionsList):-
    ).
     
 
-    
+%% Calculates all absolute distances between all different pieces of a given player
+%%  1. Current index of the piece to be calculated distance to other pieces
+%%  2. Second piece to calculate distance
+%%  3. List of all the pieces´ positions
+%%  4. List of all distances
+%%  5. Auxiliary list
 distanceBetween2(PieceIndex,5, PiecesPositionsList,DistanceList,DistanceListAux):-
     (PieceIndex < 4,
     PieceIndex1 is PieceIndex + 1,
     OtherPieceIndex1 is PieceIndex1 + 1,
     distanceBetween2(PieceIndex1,OtherPieceIndex1, PiecesPositionsList,DistanceList,DistanceListAux));
     append([],DistanceListAux,DistanceList).
-
 distanceBetween2(PieceIndex,OtherPieceIndex, PiecesPositionsList,DistanceList,DistanceListAux):-
     OtherPieceIndex < 5,
     OtherPieceIndex1 is OtherPieceIndex +1,
