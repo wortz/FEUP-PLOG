@@ -12,11 +12,13 @@ startGame(Player1,Player2) :-
 %%  2. Type of player 1
 %%  3. Type of player 2
 gameLoop(Board,Player1,Player2) :-
+    write('Red Player turn.\n'),
     move(Board,NewBoard,1,Player1,1),
     getPiecesList(NewBoard,1,PiecesPositionsList1,_,0),
     display_game(NewBoard),
     (game_over(PiecesPositionsList1,'RED');
-    (move(NewBoard,RoundBoard,2,Player2,1),
+    (write('White Player turn.\n'),
+    move(NewBoard,RoundBoard,2,Player2,1),
     getPiecesList(RoundBoard,2,PiecesPositionsList2,_,0),
     display_game(RoundBoard),
     (game_over(PiecesPositionsList2,'WHITE');
