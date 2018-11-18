@@ -36,6 +36,11 @@ traduz(0,' ').
 traduz(1,'R').
 traduz(2,'W').
 
+print_win(Player) :-
+	write('The ')
+    write(Player),
+    write(' player has won the game!\n').
+
 print_list([]).
 print_list([L|T]) :-
 	print_listAux(L),

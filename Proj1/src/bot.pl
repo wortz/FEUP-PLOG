@@ -1,9 +1,9 @@
 choose_move(Board, NewBoard, 1, Symbol):-
-    getPiecesList(Board, Symbol,PiecesPositionsList, PiecesPositionsListAux,0),
+    getPiecesList(Board, Symbol,PiecesPositionsList, _,0),
     make_randomMove(Board,Symbol,PiecesPositionsList,NewBoard).
 
  choose_move(Board, NewBoard, 2, Symbol):-
-    getPiecesList(Board, Symbol,PiecesPositionsList, PiecesPositionsListAux,0),
+    getPiecesList(Board, Symbol,PiecesPositionsList, _,0),
     listAllValidMoves(Board,PiecesPositionsList, AllMovesList).
     
  listAllValidMoves(Board,PiecesPositionsList,AllMovesList):-
@@ -21,7 +21,11 @@ choose_move(Board, NewBoard, 1, Symbol):-
 
     nth1(4,PiecesPositionsList,PieceCoords4),
     getRowColumn(PieceCoords4, Row4, Column4),
-    valid_moves(Board,Row4,Column4,MovesList4).
+    valid_moves(Board,Row4,Column4,MovesList4),
+
+    append(MovesList1,MovesList2,AllMovesListAux),
+    append(AllMovesListAux,MovesList3,AllMovesListAux1),
+    append(AllMovesListAux1,MovesList4,AllMovesList).
 
 make_randomMove(Board,Symbol,PiecesPositionsList,NewBoard):-
     repeat,

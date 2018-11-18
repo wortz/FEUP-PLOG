@@ -1,4 +1,6 @@
 %% Initiates game board and enters the loop.
+%%  1. Type of player 1
+%%  2. Type of player 2
 startGame(Player1,Player2) :-
     initialBoard(InitialBoard),
     display_game(InitialBoard),
@@ -6,24 +8,27 @@ startGame(Player1,Player2) :-
 
 %% Handles the game loop
 %%  1. Current game board
+%%  2. Type of player 1
+%%  3. Type of player 2
 gameLoop(Board,Player1,Player2) :-
     move(Board,NewBoard,1,Player1,1),
     getPiecesList(NewBoard,1,PiecesPositionsList1,_,0),
     display_game(NewBoard),
-    (game_over(PiecesPositionsList1);
+    (game_over(PiecesPositionsList1,'RED');
     (move(NewBoard,RoundBoard,2,Player2,1),
     getPiecesList(RoundBoard,2,PiecesPositionsList2,_,0),
     display_game(RoundBoard),
-    (game_over(PiecesPositionsList2);
+    (game_over(PiecesPositionsList2,'WHITE');
     gameLoop(RoundBoard,Player1,Player2)))).
-
-move(Board,NewBoar,Symbol,'C',Level) :-
-    choose_move(Board,NewBoar,Level,Symbol).
 
 %% Moves a player´s piece.          
 %%  1. Current game board state 
 %%  2. Board after piece is picked
-%%  3. Symbol representing player 
+%%  3. Symbol representing player
+%%  4. Type of player 
+%%  5. Dificulty level
+move(Board,NewBoard,Symbol,'C',Level) :-
+    choose_move(Board,NewBoard,Level,Symbol).
 move(Board,NewBoard,Symbol,'P',_) :-
     repeat,
     write('Which piece you would like to move?\n'),
@@ -46,10 +51,8 @@ validPiece(MovesList) :-
 %%  1. Game board
 %%  2. Updated game board
 %%  3. Symbol representing a player
-%%  4. Row of the piece to be moved 
-%%  5. Column of the piece to be moved 
-%%  6. List of the valid moves
-chooseDest(Board,NewBoard,Symbol,Row,NumColumn,MovesList) :-
+%%  4. List of the valid moves
+chooseDest(Board,NewBoard,Symbol,MovesList) :-
     write('You can move the piece to : \n'),
     print_list(MovesList),
     repeat,
@@ -85,14 +88,14 @@ checkCell(Board,Row,NumColumn,Symbol) :-
 %%  3. Pieces´ positions list 
 %%  4. Auxiliary pieces´ positions list
 %%  5. Current Row being checked
-getPiecesList([],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
+getPiecesList([],_,PiecesPositionsList,PiecesPositionsListAux,_) :-
     append([],PiecesPositionsListAux,PiecesPositionsList).
 getPiecesList([H|T],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
     Row1 is Row + 1,
     length(PiecesPositionsListAux,Counter),
     ((Row1 < 9,
     Counter<4,
-    getPiecesListAux(H, Row1, 0,Symbol,PiecesPositionsListTemp,PiecesPositionsListTemp1,Counter),
+    getPiecesListAux(H, Row1, 0,Symbol,PiecesPositionsListTemp,_,Counter),
     append(PiecesPositionsListAux,PiecesPositionsListTemp,PiecesPositionsListAux1),
     getPiecesList(T,Symbol,PiecesPositionsList,PiecesPositionsListAux1,Row1));    
     getPiecesList([],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row1)).
@@ -105,7 +108,7 @@ getPiecesList([H|T],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
 %%  5. Pieces´ positions list 
 %%  6. Auxiliary pieces´ positions list
 %%  7. Number of pieces found
-getPiecesListAux([], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter):-
+getPiecesListAux([], _, _, _,PiecesPositionsListAux,PiecesPositionsListTemp,_):-
     append([],PiecesPositionsListTemp,PiecesPositionsListAux).
 getPiecesListAux([H|T], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositionsListTemp,Counter):-
     Column1 is Column+1,
@@ -123,10 +126,10 @@ getPiecesListAux([H|T], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositio
 %%  3. Number of the column of the piece
 %%  4. List of the valid moves
 valid_moves(Board,Row,NumColumn,MovesList):-
-    listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
-    listColumnUp(Board,MovesList2,Row,NumColumn,TempMovesList1),
-    listRowRight(Board,MovesList3,Row,NumColumn,TempMovesList2),
-    listRowLeft(Board,MovesList4,Row,NumColumn,TempMovesList3),
+    listColumnDown(Board,MovesList1,Row,NumColumn,_TempMovesList),
+    listColumnUp(Board,MovesList2,Row,NumColumn,_TempMovesList1),
+    listRowRight(Board,MovesList3,Row,NumColumn,_TempMovesList2),
+    listRowLeft(Board,MovesList4,Row,NumColumn,_TempMovesList3),
     append(MovesList1,MovesList2,MovesListAux),
     append(MovesListAux,MovesList3,MovesListAux1),
     append(MovesListAux1,MovesList4,MovesList),!.
@@ -180,7 +183,6 @@ listRowLeft(Board,FinalList,Row,NumColumn,ListTemp) :-
 %%  1. List of legal moves
 %%  2. Row of the pretended move
 %%  3. Column of the pretended move
-
 checkValidMove(MovesList,Row2b,NumColumn2b):-
     numberColumn(Column2b,NumColumn2b),
     append([],[Row2b,Column2b],Move),!,
@@ -188,17 +190,17 @@ checkValidMove(MovesList,Row2b,NumColumn2b):-
 
 %% Checks if the winning condition is fulfilled
 %%  1. List of the positions of a player´s pieces
-game_over(PiecesPositionsList):-
+%%  2. Player being checked
+game_over(PiecesPositionsList, Player):-
     checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),!,
     (RowSpan>4,
     ColumnSpan>4,
-    distanceBetween2(1,2,PiecesPositionsList,DistanceList,ListTemp),!,
+    distanceBetween2(1,2,PiecesPositionsList,DistanceList,_),!,
     (isSquare(DistanceList),
     isRotated(PiecesPositionsList)),
-    write('GANHASTE CARALHO')
+    print_win(Player)
    ).
     
-
 %% Calculates all absolute distances between all different pieces of a given player
 %%  1. Current index of the piece to be calculated distance to other pieces
 %%  2. Second piece to calculate distance
@@ -220,6 +222,14 @@ distanceBetween2(PieceIndex,OtherPieceIndex, PiecesPositionsList,DistanceList,Di
     append(DistanceListAux,[Distance],DistanceListAux1),
     distanceBetween2(PieceIndex,OtherPieceIndex1,PiecesPositionsList,DistanceList,DistanceListAux1).
 
+%% Calculates how far apart the pieces are 
+%%  1. List of all the player´s pieces
+%%  2. Largest row number of all pieces´ position
+%%  3. Largest column number of all pieces´ position
+%%  4. Smallest row number of all pieces´ position
+%%  5. Smallest column number of all pieces´ position
+%%  6. Span of rows (M-m)
+%%  7. Span of columns (M-m)
 checkSpan([],BiggestRow,BiggestColumn,SmallestRow,SmallestColumn, RowSpan, ColumnSpan):-
     RowSpan is (BiggestRow-SmallestRow+1),
     ColumnSpan is (BiggestColumn-SmallestColumn+1).
@@ -244,56 +254,76 @@ checkSpan([H|T], BiggestRow,BiggestColumn,SmallestRow,SmallestColumn,RowSpan, Co
     BiggestRow1 is BiggestRow)),
 
     checkSpan(T, BiggestRow1,BiggestColumn1,SmallestRow1,SmallestColumn1,RowSpan, ColumnSpan).
-  
+
+%% Calculates absolute distance between two pieces
+%%  1. 1st piece
+%%  2. 2nd piece
+%%  3. Distance
 distance([H1|T1], [H2|T2], Distance):-
     Row is (H2-H1)^2,
     NumColumn is (T2-T1)^2,
     Distance is sqrt(Row + NumColumn).  
 
+%% Checks if the pieces form a square among themselves
+%%  1. List of all distances of all the pieces combinations 
 isSquare(DistanceList):-
     sort(DistanceList,Sorted),
     length(Sorted, Length),
     Length =:= 2,
     checkDiagonal(Sorted).
 
+%% Checks if the diagonal has the right length
+%%  1. Cathet
+%%  2. Hypothenuse
 checkDiagonal([H|T]):-
     Hipotenusa is (H^2 +H^2),
     HipotenusaGoal is (T^2),
     Erro is abs(Hipotenusa-HipotenusaGoal),
     Erro < 0.00000000001.
 
-isRotated([], Row1, Column1).
+%% Checks if the square formed by the pieces is rotated
+%%  1. Pieces positions
 isRotated([H|T]):-
     nth1(1,H,Row),
     nth1(2,H,Column),
     \+ (member([_,Column],T),
     member([Row,_],T)).
 
-
-
-
+%% Goes through a whole row and replaces the cell with Value.
+%%  1. Row
+%%  2. Current column
+%%  3. Value to be replaced
+%%  4. New Row of the new board
 replaceColumns([_|T], 1, Value, [Value|T]).
 replaceColumns([C|T], Column, Value, [C|TNew]) :-
         Column > 1,
         Column1 is Column - 1,
         replaceColumns(T, Column1, Value, TNew).
 
+%% Finds wanted row
+%%  1. Board 
+%%  2. Row Counter
+%%  3. Column
+%%  4. Value to be replaced
+%%  5. New Board 
 replaceRows([L|T], 1, Column,Value, [LNew|T]) :-
         replaceColumns(L, Column, Value, LNew).
-
 replaceRows([L|T], Row, Column, Value, [L|TNew]) :-
         Row > 1,
         Row1 is Row - 1,
         replaceRows(T, Row1, Column, Value, TNew).
 
+%% Unifies variables to get Row and Column 
+%%  1. Coordinates
+%%  2. Row
+%%  3. Column
 getRowColumn([H|T],H,T1):-
     T1 is T.
 
+%% Unifies variables to get Row and Column number
+%%  1. Coordinates
+%%  2. Row
+%%  3. Column
 getRowNumColumn([H|T],H,T1):-
     nth1(1,T,T2),
     numberColumn(T2,T1).
-
-
-%% TODO: mudar para unicode
-%% TODO: disclaimers e infos
-%% TODO: bots...............................................
