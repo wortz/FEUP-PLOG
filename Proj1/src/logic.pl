@@ -1,3 +1,4 @@
+:-include('boards.pl').
 %% Initiates game board and enters the loop.
 %%  1. Type of player 1
 %%  2. Type of player 2

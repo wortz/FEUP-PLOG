@@ -1,12 +1,21 @@
+%% Chooses move to be executed by the bot
+%%  1. Board before play
+%%  2. Board after play
+%%  3. Dificulty level
+%%  4. Symbol of yhe current player
 choose_move(Board, NewBoard, 1, Symbol):-
     getPiecesList(Board, Symbol,PiecesPositionsList, _,0),
     make_randomMove(Board,Symbol,PiecesPositionsList,NewBoard).
 
- choose_move(Board, NewBoard, 2, Symbol):-
+choose_move(Board, NewBoard, 2, Symbol):-
     getPiecesList(Board, Symbol,PiecesPositionsList, _,0),
     listAllValidMoves(Board,PiecesPositionsList, AllMovesList).
-    
- listAllValidMoves(Board,PiecesPositionsList,AllMovesList):-
+
+%% Lists all valid moves to all 4 pieces of a given player
+%%  1. Current Board
+%%  2. Positions of the 4 pieces
+%%  3. List containing all the valid moves   
+listAllValidMoves(Board,PiecesPositionsList,AllMovesList):-
     nth1(1,PiecesPositionsList,PieceCoords1),
     getRowColumn(PieceCoords1, Row1, Column1),
     valid_moves(Board,Row1,Column1,MovesList1),
@@ -27,6 +36,11 @@ choose_move(Board, NewBoard, 1, Symbol):-
     append(AllMovesListAux,MovesList3,AllMovesListAux1),
     append(AllMovesListAux1,MovesList4,AllMovesList).
 
+%% Randomizes a move and executes it 
+%%  1. Board
+%%  2. Symbol of the player
+%%  3. Positions of all the pieces 
+%%  4. Board after play
 make_randomMove(Board,Symbol,PiecesPositionsList,NewBoard):-
     repeat,
     random(1, 5, PieceIndex),

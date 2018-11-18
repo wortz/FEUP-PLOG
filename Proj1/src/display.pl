@@ -1,5 +1,3 @@
-:-include('boards.pl').
-
 printLetters:-write(' | h | g | f | e | d | c | b | a | '), nl.
 
 printSeparator:-write('___________________________________'), nl.
@@ -37,7 +35,7 @@ traduz(1,'R').
 traduz(2,'W').
 
 print_win(Player) :-
-	write('The ')
+	write('The '),
     write(Player),
     write(' player has won the game!\n').
 
