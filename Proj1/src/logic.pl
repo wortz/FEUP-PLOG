@@ -6,40 +6,32 @@ startGame(Player1,Player2) :-
 
 %% Handles the game loop
 %%  1. Current game board
-gameLoop(Board,'P','P') :-
-    movePiece(Board,NewBoard,1),
-    getPiecesList(NewBoard,1,PiecesPositionsList1,PiecesPositionsListAux1,0),
+gameLoop(Board,Player1,Player2) :-
+    move(Board,NewBoard,1,Player1,1),
+    getPiecesList(NewBoard,1,PiecesPositionsList1,_,0),
     display_game(NewBoard),
-    (checkWin(PiecesPositionsList1);
-    (movePiece(NewBoard,RoundBoard,2),
-    getPiecesList(RoundBoard,2,PiecesPositionsList2,PiecesPositionsListAux2,0),
+    (game_over(PiecesPositionsList1);
+    (move(NewBoard,RoundBoard,2,Player2,1),
+    getPiecesList(RoundBoard,2,PiecesPositionsList2,_,0),
     display_game(RoundBoard),
-    (checkWin(PiecesPositionsList2);
-    gameLoop(RoundBoard)))).
+    (game_over(PiecesPositionsList2);
+    gameLoop(RoundBoard,Player1,Player2)))).
 
-gameLoop(Board,'P','C') :-
-    movePiece(Board,NewBoard,1),
-    getPiecesList(NewBoard,1,PiecesPositionsList1,PiecesPositionsListAux1,0),
-    display_game(NewBoard),
-    (checkWin(PiecesPositionsList1);
-    (choose_move(NewBoard,RoundBoard,'EASY',2),
-    getPiecesList(RoundBoard,2,PiecesPositionsList2,PiecesPositionsListAux2,0),
-    display_game(RoundBoard),
-    (checkWin(PiecesPositionsList2);
-    gameLoop(RoundBoard,'P','C')))).
+move(Board,NewBoar,Symbol,'C',Level) :-
+    choose_move(Board,NewBoar,Level,Symbol).
 
 %% Moves a player´s piece.          
 %%  1. Current game board state 
 %%  2. Board after piece is picked
 %%  3. Symbol representing player 
-movePiece(Board,NewBoard,Symbol) :-
+move(Board,NewBoard,Symbol,'P',_) :-
     repeat,
     write('Which piece you would like to move?\n'),
     chooseCell(Row,NumColumn),
     ((checkCell(Board,Row,NumColumn,Symbol),
-    listValidMoves(Board,Row,NumColumn,MovesList),
+    valid_moves(Board,Row,NumColumn,MovesList),
     validPiece(MovesList));
-    (write('Not a valid piece or with no moves! Choose again.\n'),
+    (write('Not a valid piece or with no moves! Choose again.\n\n'),
     fail)),!,
     replaceRows(Board,Row,NumColumn,0,BoardAux),
     chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn,MovesList),!.
@@ -64,7 +56,7 @@ chooseDest(Board,NewBoard,Symbol,Row,NumColumn,MovesList) :-
     write('To Where?\n'),
     chooseCell(Row1,NumColumn1),
     ((checkValidMove(MovesList,Row1,NumColumn1));
-    (write('Not a valid move for that piece! Choose again.\n'),
+    (write('Not a valid move for that piece! Choose again.\n\n'),
     fail)),!,
     replaceRows(Board,Row1,NumColumn1,Symbol,NewBoard).
 
@@ -94,8 +86,7 @@ checkCell(Board,Row,NumColumn,Symbol) :-
 %%  4. Auxiliary pieces´ positions list
 %%  5. Current Row being checked
 getPiecesList([],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
-    append([],PiecesPositionsListAux,PiecesPositionsList),
-    print_list(PiecesPositionsList).
+    append([],PiecesPositionsListAux,PiecesPositionsList).
 getPiecesList([H|T],Symbol,PiecesPositionsList,PiecesPositionsListAux,Row) :-
     Row1 is Row + 1,
     length(PiecesPositionsListAux,Counter),
@@ -131,7 +122,7 @@ getPiecesListAux([H|T], Row, Column, Symbol,PiecesPositionsListAux,PiecesPositio
 %%  2. Row of the piece 
 %%  3. Number of the column of the piece
 %%  4. List of the valid moves
-listValidMoves(Board,Row,NumColumn,MovesList):-
+valid_moves(Board,Row,NumColumn,MovesList):-
     listColumnDown(Board,MovesList1,Row,NumColumn,TempMovesList),
     listColumnUp(Board,MovesList2,Row,NumColumn,TempMovesList1),
     listRowRight(Board,MovesList3,Row,NumColumn,TempMovesList2),
@@ -197,7 +188,7 @@ checkValidMove(MovesList,Row2b,NumColumn2b):-
 
 %% Checks if the winning condition is fulfilled
 %%  1. List of the positions of a player´s pieces
-checkWin(PiecesPositionsList):-
+game_over(PiecesPositionsList):-
     checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),!,
     (RowSpan>4,
     ColumnSpan>4,
@@ -295,6 +286,12 @@ replaceRows([L|T], Row, Column, Value, [L|TNew]) :-
         Row1 is Row - 1,
         replaceRows(T, Row1, Column, Value, TNew).
 
+getRowColumn([H|T],H,T1):-
+    T1 is T.
+
+getRowNumColumn([H|T],H,T1):-
+    nth1(1,T,T2),
+    numberColumn(T2,T1).
 
 
 %% TODO: mudar para unicode

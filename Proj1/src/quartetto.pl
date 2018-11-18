@@ -7,5 +7,5 @@
 :-use_module(library(lists)).
 :-use_module(library(random)).
 
-quartetto :-
+play :-
     start.

@@ -56,5 +56,5 @@ printRulesMenu :-
     write('|                                                                         |'),nl,
     write('|                                                                         |'),nl,
     write(' _________________________________________________________________________ '),nl,nl,nl,
-    read(Input),
+    read(_),
     start.

@@ -9,12 +9,10 @@ mainMenuInput(2) :-
     startGame('P','C').
 
 mainMenuInput(3) :-
-    write('\nNot Working Yet...\n\n'),
-    start.
+    startGame('C','P').
 
 mainMenuInput(4) :-
-    write('\nNot Working Yet...\n\n'),
-    start.
+    startGame('C','C').
 
 mainMenuInput(5) :-
     printRulesMenu.
