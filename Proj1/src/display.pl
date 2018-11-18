@@ -35,11 +35,12 @@ traduz(1,'R').
 traduz(2,'W').
 
 print_win(Player) :-
+    printSeparator,
 	printSeparator,
 	write('____________PLAYER_________________'),nl,
-	write('___________'),
+	write('               '),
     write(Player),
-	write('___________'),nl,
+	write('               '),nl,
     write('_______has won the game!___________ \n'),printSeparator.
 
 print_list([]).
