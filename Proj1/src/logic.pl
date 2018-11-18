@@ -29,7 +29,9 @@ gameLoop(Board,Player1,Player2) :-
 %%  4. Type of player 
 %%  5. Dificulty level
 move(Board,NewBoard,Symbol,'C',Level) :-
-    choose_move(Board,NewBoard,Level,Symbol).
+    choose_move(Board,NewBoard,Level,Symbol),
+    write('Write anything to continue (followed by . )'),nl.
+%%    read(_).
 move(Board,NewBoard,Symbol,'P',_) :-
     repeat,
     write('Which piece you would like to move?\n'),
