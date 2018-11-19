@@ -24,7 +24,7 @@ gameLoop(Board,Player1,Player2,Level) :-
     display_game(RoundBoard),
     ((game_over(PiecesPositionsList2),
     print_win('WHITE'));
-    gameLoop(RoundBoard,Player1,Player2)))).
+    gameLoop(RoundBoard,Player1,Player2,Level)))).
 
 %% Moves a player´s piece.          
 %%  1. Current game board state 
@@ -34,8 +34,7 @@ gameLoop(Board,Player1,Player2,Level) :-
 %%  5. Dificulty level
 move(Board,NewBoard,Symbol,'C',Level) :-
     choose_move(Board,NewBoard,Level,Symbol),
-    write('Write anything to continue (followed by . )'),nl,
-    read(_).
+    nl.
 move(Board,NewBoard,Symbol,'P',_) :-
     repeat,
     write('Which piece you would like to move?\n'),

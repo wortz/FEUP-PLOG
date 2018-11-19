@@ -38,9 +38,8 @@ print_win(Player) :-
     printSeparator,
 	printSeparator,
 	write('____________PLAYER_________________'),nl,
-	write('               '),
-    write(Player),
-	write('               '),nl,
+	write('             '),
+    write(Player),nl,
     write('_______has won the game!___________ \n'),printSeparator.
 
 print_list([]).

@@ -116,9 +116,10 @@ recursiveValueAux(PiecesPositionsList,[H|T],Index,ValuesListAux):-
 value(PiecesPositionsList,Coords,Index,Value):-
     ((valueWin(PiecesPositionsList,Index,Coords),
     Value is 3);
-        Value is 0).
-
-
+        ((check_for_triangle(PiecesPositionsList,Coords,Index),
+        Value is 2);
+            Value is 0)).
+    
 %% Checks if a certain move can win the game.
 %%  1.List with the positions of the pieces.
 %%  2.Index of the piece to move.
@@ -182,6 +183,71 @@ getBestValueAux(BestValue,[H|T],BestValueTemp) :-
     getBestValueAux(BestValue,T,H));
         getBestValueAux(BestValue,T,BestValueTemp)).
 
-%% TODO:
-%% Impedir que o outro jogador nao ganhe - local a avaliar com mais 3 pecas do inimigo para ver se ganha
-%% Move faz um triangulo retangulo, verificar se tem espaco para fazer o quadrado
+%% Checks if the moven piece forms a triangle with any combination with 2 of the other pieces
+%%  1. Unmoven pieces
+%%  2. New position of the piece of index PieceIndex
+%%  3. Index of the piece to be moved
+check_for_triangle(PiecesPositionsList,Move,PieceIndex):-
+   nth1(PieceIndex,PiecesPositionsList,CurrentPiece),    
+   delete(PiecesPositionsList,CurrentPiece,PiecesPositionsListTemp), 
+   getRowNumColumn(Move,R,NC),
+   append([[R,NC]], PiecesPositionsListTemp, PiecesPositionsList_2Bchecked),!,     %% para ficar a move na primeira posição
+   recursiveCheck_for_triangle(PiecesPositionsList_2Bchecked, 5).            %% fail se nao forma triangulo,true se sim 
+   
+%% Checks if the 3 pieces form a rectangule triangle 
+%%  1. Coordinates of the pieces
+isTriangle(TriCoords):-
+   distanceAmong3(1,2,TriCoords,DistanceList,_),!,
+   isSquare(DistanceList),                                                  %% ve se é triangulo rectangulo
+   isRotated(TriCoords),
+   tryAllCombos(TriCoords, 0).
+
+%% Tries all the combinations of the moven piece with the other 3 to check for a triangle
+%%  1. All 4 pieces Coordinates
+%%  2. Index of the moven piece
+recursiveCheck_for_triangle(PiecesPositionsList, PieceIndex):-
+   PieceIndex1 is PieceIndex - 1,  
+   PieceIndex1 > 1,                                                          %% para eliminar um a um a partir do fim
+   nth1(PieceIndex1,PiecesPositionsList ,CurrentPiece),     
+   delete(PiecesPositionsList,CurrentPiece,TriCoords),      
+   checkSpan(TriCoords,0,0,8,8,RowSpan,ColumnSpan),!,
+   (((RowSpan>4; ColumnSpan>4)-> isTriangle(TriCoords);
+   recursiveCheck_for_triangle(PiecesPositionsList, PieceIndex1));
+   recursiveCheck_for_triangle(PiecesPositionsList, PieceIndex1)         %% não tem span sufiiente ou nao e triangulo, continua
+   ).                                                                    %% senão, acaba
+
+
+tryAllCombosColumns(TriCoords, Column, Row):-
+    Column1 is Column +1,
+    Column1 <9, 
+    append([[Row, Column]], TriCoords, Square_2B),
+    (game_over(Square_2B);
+    tryAllCombosColumns(TriCoords,Column1,Row)).
+
+tryAllCombos(TriCoords, Row):-
+    Row1 is Row +1,
+    Row1<9, 
+    (tryAllCombosColumns(TriCoords,0, Row1);
+    tryAllCombos(TriCoords,Row1)).
+    
+
+%% Calculates distances among 3 pieces (all combinations)
+%%  1. Current index of the piece to be calculated distance to other pieces
+%%  2. Second piece to calculate distance
+%%  3. List of all the pieces´ positions
+%%  4. List of all distances
+%%  5. Auxiliary list
+distanceAmong3(PieceIndex,4, PiecesPositionsList,DistanceList,DistanceListAux):-
+   (PieceIndex < 4,
+   PieceIndex1 is PieceIndex + 1,
+   OtherPieceIndex1 is PieceIndex1 + 1,
+   distanceAmong3(PieceIndex1,OtherPieceIndex1, PiecesPositionsList,DistanceList,DistanceListAux));
+   append([],DistanceListAux,DistanceList).
+distanceAmong3(PieceIndex,OtherPieceIndex, PiecesPositionsList,DistanceList,DistanceListAux):-
+   OtherPieceIndex < 4,
+   OtherPieceIndex1 is OtherPieceIndex +1,
+   nth1(PieceIndex,PiecesPositionsList,Coords1),
+   nth1(OtherPieceIndex,PiecesPositionsList,Coords2),
+   distance(Coords1,Coords2,Distance),
+   append(DistanceListAux,[Distance],DistanceListAux1),
+   distanceAmong3(PieceIndex,OtherPieceIndex1,PiecesPositionsList,DistanceList,DistanceListAux1).
