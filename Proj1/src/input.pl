@@ -6,13 +6,13 @@ mainMenuInput(1) :-
     startGame('P','P').
 
 mainMenuInput(2) :-
-    startGame('P','C').
+    choose_level('P','C').
 
 mainMenuInput(3) :-
-    startGame('C','P').
+    choose_level('C','P').
 
 mainMenuInput(4) :-
-    startGame('C','C').
+    choose_level('C','C').
 
 mainMenuInput(5) :-
     printRulesMenu.
@@ -24,6 +24,21 @@ mainMenuInput(_Other) :-
     write('\nERROR: that option does not exist.\n\n'),
     askOption(Input),
     mainMenuInput(Input).
+
+choose_level(Player1,Player2):-
+    write('\n\n1-Level 1 PC\n2-Level 2 PC\n\n'),
+    askOption(Input),
+    choose_levelInput(Input,Player1,Player2).
+
+choose_levelInput(1,Player1,Player2) :-
+    startGame(Player1,Player2,1).
+
+choose_levelInput(2,Player1,Player2) :-
+    startGame(Player1,Player2,2).
+
+choose_levelInput(_,Player1,Player2) :-
+    write('\nERROR: that option does not exist.\n\n'),
+    choose_level(Player1,Player2).
 
 askRow(Row) :-
     write(' what row (NUMBER):\n'),

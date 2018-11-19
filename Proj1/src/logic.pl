@@ -2,26 +2,28 @@
 %% Initiates game board and enters the loop.
 %%  1. Type of player 1
 %%  2. Type of player 2
-startGame(Player1,Player2) :-
+startGame(Player1,Player2,Level) :-
     initialBoard(InitialBoard),
     display_game(InitialBoard),
-    gameLoop(InitialBoard,Player1,Player2).
+    gameLoop(InitialBoard,Player1,Player2,Level).
 
 %% Handles the game loop
 %%  1. Current game board
 %%  2. Type of player 1
 %%  3. Type of player 2
-gameLoop(Board,Player1,Player2) :-
+gameLoop(Board,Player1,Player2,Level) :-
     write('Red Player turn.\n'),
-    move(Board,NewBoard,1,Player1,1),
+    move(Board,NewBoard,1,Player1,Level),
     getPiecesList(NewBoard,1,PiecesPositionsList1,_,0),
     display_game(NewBoard),
-    (game_over(PiecesPositionsList1,'RED');
+    ((game_over(PiecesPositionsList1),
+    print_win('RED'));
     (write('White Player turn.\n'),
-    move(NewBoard,RoundBoard,2,Player2,1),
+    move(NewBoard,RoundBoard,2,Player2,Level),
     getPiecesList(RoundBoard,2,PiecesPositionsList2,_,0),
     display_game(RoundBoard),
-    (game_over(PiecesPositionsList2,'WHITE');
+    ((game_over(PiecesPositionsList2),
+    print_win('WHITE'));
     gameLoop(RoundBoard,Player1,Player2)))).
 
 %% Moves a player´s piece.          
@@ -32,8 +34,8 @@ gameLoop(Board,Player1,Player2) :-
 %%  5. Dificulty level
 move(Board,NewBoard,Symbol,'C',Level) :-
     choose_move(Board,NewBoard,Level,Symbol),
-    write('Write anything to continue (followed by . )'),nl.
-%%    read(_).
+    write('Write anything to continue (followed by . )'),nl,
+    read(_).
 move(Board,NewBoard,Symbol,'P',_) :-
     repeat,
     write('Which piece you would like to move?\n'),
@@ -44,7 +46,7 @@ move(Board,NewBoard,Symbol,'P',_) :-
     (write('Not a valid piece or with no moves! Choose again.\n\n'),
     fail)),!,
     replaceRows(Board,Row,NumColumn,0,BoardAux),
-    chooseDest(BoardAux,NewBoard,Symbol,Row,NumColumn,MovesList),!.
+    chooseDest(BoardAux,NewBoard,Symbol,MovesList),!.
 
 %% Checks if the piece has valid moves.
 %%  1. List of the valid moves
@@ -195,15 +197,13 @@ checkValidMove(MovesList,Row2b,NumColumn2b):-
 
 %% Checks if the winning condition is fulfilled
 %%  1. List of the positions of a player´s pieces
-%%  2. Player being checked
-game_over(PiecesPositionsList, Player):-
+game_over(PiecesPositionsList):-
     checkSpan(PiecesPositionsList,0,0,8,8,RowSpan,ColumnSpan),!,
     (RowSpan>4,
     ColumnSpan>4,
     distanceBetween2(1,2,PiecesPositionsList,DistanceList,_),!,
     (isSquare(DistanceList),
-    isRotated(PiecesPositionsList)),
-    print_win(Player)
+    isRotated(PiecesPositionsList))
    ).
     
 %% Calculates all absolute distances between all different pieces of a given player
