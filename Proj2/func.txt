@@ -1,0 +1,20 @@
+Escolha de var
+
+leftmost
+min
+max
+ff - menor numero de possibilidades
+ffc - menor numero de possibilidades e desempata através do numero de restricoes
+enti_first_fail - maior numero de possibilidades
+occurence
+max_regret - elimina os que tem maior diferença
+
+Escolha de valor
+
+step
+enum
+bisect - divide em dois
+medion - utiliza o valor medio ou o mais proximo
+middle - utiliza o valor do meio
+
+

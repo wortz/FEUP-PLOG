@@ -3,7 +3,7 @@ askOption(Input) :-
     read(Input).
 
 mainMenuInput(1) :-
-    startGame('P','P').
+    startGame('P','P',_).
 
 mainMenuInput(2) :-
     choose_level('P','C').
