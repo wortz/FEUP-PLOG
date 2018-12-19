@@ -1,10 +1,10 @@
-tableHeader(0,_):-
+%% a chamar com tableHeader(Months, 0)
+tableHeader(Months,Months):-
     write('Total'), nl.
 tableHeader(Months, Counter):-
-    write('M'+Counter+' '),
     Counter1 is Counter + 1,
-    Months1 is Months+1, 
-    tableHeader(Months1,Counter1).
+    write('M'+Counter+' '),
+    tableHeader(Months,Counter1).
 
 printSeparator:-write('___________________________________'), nl.
 
