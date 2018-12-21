@@ -21,57 +21,60 @@ func:-
     length(Matrix,NrActividades),
     set3dMatrixAux(Matrix,NrInvestigadores),
     set3dMatrix(Matrix,NMeses),
-    write(Matrix),
     docente(DocentesList),
     contratado(ContratadosList),
 
     
-    actividadesMeses(ActividadesMeses). 
+    actividadesMeses(ActividadesMeses),
+    
+    iter(Matrix,1,1,1,Matrix,Sum),nl,nl,
+    write(Matrix). 
 
-%%Iterar sobre NrActividades e passar esse valor no param CurrentActivity
-iter(Matrix,ActividadesMeses,CurrentActivity):-
-    nth1(CurrentActivity,ActividadesMeses,CurrentActivityMeses),   
-    nth1(CurrentActivity,Matrix,CurrentActivityMatrix).
+
+iter([],IndexMes,IndexInvestigador,_,Matrix,Sum):-  %%passar 2 vezes a Matrix?? acho q tem de ser
+    duracaoProjecto(Dur),
+    nrInvestigadores(NrInv),
+    ((
+        IndexMes1 is IndexMes +1,
+        IndexMes1=<Dur,
+        iter(Matrix,IndexMes1,IndexInvestigador,1,Matrix,Sum)
+    )
+    ;(  
+        IndexInvestigador1 is IndexInvestigador+1,  %%chega ao fim dos meses, checka outro inv
+        (
+            IndexInvestigador1 =< NrInv,
+            iter(Matrix,1,IndexInvestigador1,1,Matrix,Sum)
+        )
+            ;true
+    )).
+iter([H|T],IndexMes, IndexInvestigador,IndexActivity,Matrix,Sum):-
+    nth1(IndexInvestigador,H,CurrentInvest_Activity),%%encontra meses de investigador na actividade a ser iterada
+    nth1(IndexMes,CurrentInvest_Activity,M),
+    a(M,IndexActivity,IndexInvestigador,IndexMes),
+    IndexActivity1 is IndexActivity+1,
+    iter(T,IndexMes, IndexInvestigador,IndexActivity1,Matrix,Sum).
+
+
+
+
+
+
 
 %params
-%%indice da actividade a verificar
-%%lista de ActividadesMeses da current actividade
-%%lista da matrix da current actividade
-%%Indice da CurrentActivityMatrix a ser verificado
-iterInvestigadores(IndexActivity,CurrentActivityMeses,CurrentActivityMatrix,IndexInvestigador):-
-    nth1(IndexInvestigador,CurrentActivityMatrix,LinhaTabelaActividade),
-    a(LinhaTabelaActividade,CurrentActivityMeses,IndexInvestigador,0).
-    
-
-
-%%LinhaTabelaActividade
-%%
-
-a([],_,_,_).
-a([H|T],CurrentActivityMeses,IndexInvestigador,Index):-  
-    Index1 is Index+1,  
+%% Variavel de Mes actual (a restringir)
+%% 
+a(M,IndexActivity,IndexInvestigador,IndexMes):-    
     (
-      (
-        (mesFolga(IndexInvestigador,Index1);%%ve se index1 e mes de folga
-         \+ member(Index1,CurrentActivityMeses)),
-        H#=0, a(T,CurrentActivityMeses,CurrentInvMesFolga,Index1) %%mudar para =>
+        (mesFolga(IndexInvestigador,IndexMes);%%ve se indexMes e mes de folga
+        (actividadesMeses(ActividadesMeses),
+        nth1(IndexActivity,ActividadesMeses,CurrentActivityMeses),
+        \+ member(IndexMes,CurrentActivityMeses))),
+        M#=0
       )
-    ; (
-        retricoes_rigidas1(IndexInvestigador,H),
-        a(T,CurrentActivityMeses,CurrentInvMesFolga,Index1))).
-
-
-retricoes_rigidas1(IndexInvestigador,MatrixH):-
-    (
-        docente(X),member(IndexInvestigador,X),      
-        docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
-        MatrixH in 0..HorasMesDocente
-    );
-    (
-        contratado(Y),member(IndexInvestigador,Y),
-        contratadoHorasMensais(IndexInvestigador,HorasMesContratado),
-        MatrixH #= HorasMesContratado
+    ;(
+        true
     ).
+
 
 
 %%verifica se ha tempo para cada atividade(docente)
@@ -107,5 +110,17 @@ restricaoTotalHorasActividade([H|T],Sum):-
 %%dimensao actividad - restriçao rigida das horas totais , mes em que nao se trabalha e optimizacao final(flex)
 %%restricao 1 ir a todos os inv numa activi e para cada mes restriçao rigida das horas totais  
 %%flexiveis - tipo carteiro pergui , para actividade e para invest
+
+retricoes_rigidas1(IndexInvestigador,MatrixH):-
+    (
+        docente(X),member(IndexInvestigador,X),      
+        docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
+        MatrixH in 0..HorasMesDocente
+    );
+    (
+        contratado(Y),member(IndexInvestigador,Y),
+        contratadoHorasMensais(IndexInvestigador,HorasMesContratado),
+        MatrixH #= HorasMesContratado
+    ).
 
 
