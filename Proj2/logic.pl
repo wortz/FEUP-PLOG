@@ -27,34 +27,51 @@ func:-
     
     actividadesMeses(ActividadesMeses),
     
-    iter(Matrix,1,1,1,Matrix,Sum),nl,nl,
+    iter(Matrix,1,1,1,Matrix,_),nl,nl,
     write(Matrix). 
 
 
-iter([],IndexMes,IndexInvestigador,_,Matrix,Sum):-  %%passar 2 vezes a Matrix?? acho q tem de ser
+iter([],IndexMes,IndexInvestigador,_,Matrix,SumMes):-  %%passar 2 vezes a Matrix?? acho q tem de ser
     duracaoProjecto(Dur),
     nrInvestigadores(NrInv),
     ((
         IndexMes1 is IndexMes +1,
         IndexMes1=<Dur,
-        iter(Matrix,IndexMes1,IndexInvestigador,1,Matrix,Sum)
+        SumMes=0,
+        iter(Matrix,IndexMes1,IndexInvestigador,1,Matrix,SumMes1)
     )
     ;(  
         IndexInvestigador1 is IndexInvestigador+1,  %%chega ao fim dos meses, checka outro inv
         (
             IndexInvestigador1 =< NrInv,
-            iter(Matrix,1,IndexInvestigador1,1,Matrix,Sum)
+            iter(Matrix,1,IndexInvestigador1,1,Matrix,SumMes)
         )
             ;true
     )).
-iter([H|T],IndexMes, IndexInvestigador,IndexActivity,Matrix,Sum):-
+iter([H|T],IndexMes, IndexInvestigador,IndexActivity,Matrix,SumMes):-
     nth1(IndexInvestigador,H,CurrentInvest_Activity),%%encontra meses de investigador na actividade a ser iterada
     nth1(IndexMes,CurrentInvest_Activity,M),
     a(M,IndexActivity,IndexInvestigador,IndexMes),
     IndexActivity1 is IndexActivity+1,
-    iter(T,IndexMes, IndexInvestigador,IndexActivity1,Matrix,Sum).
+    iter(T,IndexMes, IndexInvestigador,IndexActivity1,Matrix,SumMesAux).
+    SumMes #= SumMesAux + M,
+    checkInvestigador(IndexInvestigador,SumMes).
 
-
+%%params
+%%Index do invest
+%% Funçao pode ser usada para restringir a soma das horas de trabalho
+%de um investigador num mes, ou para restringir as horas de um mes numa acti
+checkInvestigador(IndexInvestigador,SumMes_ou_MaxMes):-
+    (
+        docente(X),member(IndexInvestigador,X),      
+        docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
+        SumMes_ou_MaxMes in 0..HorasMesDocente
+    );
+    (
+        contratado(Y),member(IndexInvestigador,Y),
+        contratadoHorasMensais(IndexInvestigador,HorasMesContratado),
+        SumMes_ou_MaxMes #= HorasMesContratado
+    ).
 
 
 
@@ -63,16 +80,16 @@ iter([H|T],IndexMes, IndexInvestigador,IndexActivity,Matrix,Sum):-
 %params
 %% Variavel de Mes actual (a restringir)
 %% 
-a(M,IndexActivity,IndexInvestigador,IndexMes):-    
+a(M,IndexActivity,IndexInvestigador,IndexMes):- 
     (
         (mesFolga(IndexInvestigador,IndexMes);%%ve se indexMes e mes de folga
         (actividadesMeses(ActividadesMeses),
         nth1(IndexActivity,ActividadesMeses,CurrentActivityMeses),
         \+ member(IndexMes,CurrentActivityMeses))),
-        M#=0
+        M=0
       )
     ;(
-        true
+        checkInvestigador(IndexInvestigador,M)
     ).
 
 
