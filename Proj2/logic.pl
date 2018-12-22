@@ -74,7 +74,7 @@ iterAux1(Matrix,IndexInvestigador,IndexMes,SumTotal):-
 %%SumMes- Soma do tempo que ele trabalha por mes em todas as atividades
 iter([],_,_,_,0).
 iter([H|T],IndexMes, IndexInvestigador,IndexActivity,SumMes):-
-    nth1(IndexInvestigador,H,CurrentInvest_Activity),%%encontra meses de investigador na actividade a ser iterada
+    nth1(IndexInvestigador,H,CurrentInvest_Activity),       %%encontra meses de investigador na actividade a ser iterada
     nth1(IndexMes,CurrentInvest_Activity,M),
     a(M,IndexActivity,IndexInvestigador,IndexMes),
     IndexActivity1 is IndexActivity+1,
@@ -100,7 +100,9 @@ checkInvestigador(IndexInvestigador,SumMes_ou_MaxMes,Boolean):-
         SumMes_ou_MaxMes in 0..HorasMesContratado)
     ).
 
-
+%%Aplica a restricao de tempo que um investigador docente deve aplicar no projeto, caso exista
+%%IndexInvestigador- Investigador a ser aplicada a restrição
+%%SumTotal- Soma dos tempos onde vai ser aplicada a restrição
 restricaoTempoDedicarProjeto(IndexInvestigador,SumTotal):-
     ((docenteTotalHorasProjecto(IndexInvestigador,HorasADedicar),
     write('Tempo a dedicar ao projeto - docentes\n\n'),
@@ -113,13 +115,21 @@ restricaoTempoDedicarProjeto(IndexInvestigador,SumTotal):-
 %% 
 a(M,IndexActivity,IndexInvestigador,IndexMes):- 
     ((
-        (mesFolga(IndexInvestigador,IndexMes);%%ve se indexMes e mes de folga
-        (actividadesMeses(ActividadesMeses),
-        nth1(IndexActivity,ActividadesMeses,CurrentActivityMeses),
-        \+ member(IndexMes,CurrentActivityMeses))),
+        checkNaoTrabalha(IndexActivity,IndexInvestigador,IndexMes),
         M#=0
       );
     checkInvestigador(IndexInvestigador,M,2)).
+
+
+%%verifica se não trabalha nesse mes para essa atividade
+%%IndexActivity- Indice da atividade a ser avaliada
+%%IndexInvestigador- Indice do investigador a ser availado
+%%IndexMes- Indice do mes a ser avaliado
+checkNaoTrabalha(IndexActivity,IndexInvestigador,IndexMes):-
+    (mesFolga(IndexInvestigador,IndexMes);%%ve se indexMes e mes de folga
+        (actividadesMeses(ActividadesMeses),
+        nth1(IndexActivity,ActividadesMeses,CurrentActivityMeses),
+        \+ member(IndexMes,CurrentActivityMeses))).
 
 
 %%
@@ -149,14 +159,14 @@ retricoes_rigidas1(IndexInvestigador,MatrixH):-
 %%Iterar sobre NrActividades e passar esse valor no param CurrentActivity
 iterarfinal(Matrix,IndexActivity,NrAtividades,Dif):-
     nth1(IndexActivity,Matrix,CurrentActivityMatrix),
-    iterInvestigadores(CurrentActivityMatrix,SumMeses,DifInv),
+    iterInvestigadores(CurrentActivityMatrix,SumMeses,DifInv,1,IndexActivity),
     duracaoActividades(X),nth1(IndexActivity,X,HorasNecessarias),
     SumMeses #= HorasNecessarias,
     ((IndexActivity1 is IndexActivity + 1,
     IndexActivity1 =< NrAtividades,
     iterarfinal(Matrix,IndexActivity1,NrAtividades,Dif1),
     Dif #= DifInv-Dif1);
-    Dif #= 0).
+    Dif #= DifInv).
 
 
 %params
@@ -164,19 +174,33 @@ iterarfinal(Matrix,IndexActivity,NrAtividades,Dif):-
 %%lista de ActividadesMeses da current actividade
 %%lista da matrix da current actividade
 %%Indice da CurrentActivityMatrix a ser verificado
-iterInvestigadores([],0,0).
-iterInvestigadores([H|T],SumMeses,DifInv):-
-    iterSomaInv(H,SomaInv),
-    iterInvestigadores(T,SumMeses1,DifInv1),
-    maximum(Maxi,H),
-    minimum(Mini,H),
+iterInvestigadores([],0,0,_,_).
+iterInvestigadores([H|T],SumMeses,DifInv,IndexInvestigador,IndexActivity):-
+    iterSomaInv(H,SomaInv,IndexInvestigador,IndexActivity,1,TemposNaoFolga),
+    write('boas\n\n'),
+    durAtividade(SomaInv,IndexInvestigador,IndexActivity),
+    IndexInvestigador1 is IndexInvestigador +1,
+    iterInvestigadores(T,SumMeses1,DifInv1,IndexInvestigador1,IndexActivity),
+    maximum(Maxi,TemposNaoFolga),
+    minimum(Mini,TemposNaoFolga),
     DifInv#=Maxi-Mini-DifInv1,
     SumMeses #= SomaInv + SumMeses1.
 
-
-iterSomaInv([],0).
-iterSomaInv([H|T],SomaInv):-
-    iterSomaInv(T,SomaInv1),
+%%itera pelos meses todos de uma atividade para um investigador e retorna a soma de todos os tempo e uma lista com todos os tempos em que ele trabalha
+%%iterSomaInv(TemposInvestigador,SomaInv,IndexInvestigador,IndexActivity,IndexMes,TemposNaoFolga)
+%%TemposInvestigador- Lista com os meses para uma atividade para um certo investigador
+%%SomaInv- Para retornar a soma de todos os tempos
+%%IndexInvestigador- Indice do investigador a ser avaliado
+%%IndexActivity- Indice da atividade a ser avaliada
+%%IndexMes- Indice do mes a ser avaliado , vai sendo incrementado cada vez que avança na lista TemposInvestigador
+%%TemposNaoFolga- Lista onde vao estar no fim os tempos todos em que ele trabalha
+iterSomaInv([],0,_,_,_,[]).
+iterSomaInv([H|T],SomaInv,IndexInvestigador,IndexActivity,IndexMes,TemposNaoFolga):-
+    IndexMes1 is IndexMes +1,
+    iterSomaInv(T,SomaInv1,IndexInvestigador,IndexActivity,IndexMes1,TemposNaoFolga1),
+    ((checkNaoTrabalha(IndexActivity,IndexInvestigador,IndexMes), %%caso nao trabalhe
+    append([],TemposNaoFolga1,TemposNaoFolga));   %%nao da append de nada
+    append([H],TemposNaoFolga1,TemposNaoFolga)),  %%se nao da appende desse valor
     SomaInv #= H + SomaInv1.
 
 
@@ -199,25 +223,12 @@ pushElementsToList([H|T], Prev, [H|NewList]):-
 
 %%verifica se ha tempo para cada atividade(docente)
 %%caso haja chama a funcao para aplicar a restricao de horas por atividade
-%%Linha com as variaveis para cada mes para uma actividade
+%%Valor com o tempo que trabalha numa atividade
 %%Indice do investigador
 %%Indice da actividade
 %% durAtividade(LinhaTabelaActividade,IndexInvestigador,IndexActivity)   
-durAtividade(LinhaTabelaActividade,IndexInvestigador,IndexActivity):-
-    %%TempopActividade é o valor que um investigador deve dedicar a uma atividade 
-    domain(LinhaTabelaActividade,1,30),
-    docenteTotalHorasActividade(IndexInvestigador,TempopActividade,IndexActivity),
-    restricaoTotalHorasActividade(LinhaTabelaActividade,Sum),
-    Sum #=TempopActividade,
-    maximum(Maxi,LinhaTabelaActividade),
-    minimum(Mini,LinhaTabelaActividade),
-    Diferenca#=Maxi-Mini,
-    labeling([minimize(Diferenca)],LinhaTabelaActividade),
-    write(LinhaTabelaActividade).
+durAtividade(TempoInvActi,IndexInvestigador,IndexActivity):-
+    ((docenteTotalHorasActividade(IndexInvestigador,TempopActividade,IndexActivity),
+    TempoInvActi#=TempopActividade);
+    true).
 
-
-%%itera pela lista de um investigador para uma atividade e aplica a restricao de horas por actividade
-restricaoTotalHorasActividade([],0).
-restricaoTotalHorasActividade([H|T],Sum):-
-    restricaoTotalHorasActividade(T,Sum1),
-    Sum #= H + Sum1.
