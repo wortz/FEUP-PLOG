@@ -21,20 +21,11 @@ func:-
     length(Matrix,NrActividades),
     set3dMatrixAux(Matrix,NrInvestigadores),
     set3dMatrix(Matrix,NMeses),
-    docente(DocentesList),
-    contratado(ContratadosList),
-
-    
-    actividadesMeses(ActividadesMeses),
-    
     iterAux(Matrix,1),
-    iterarfinal(Matrix,1,NrActividades),
+    iterarfinal(Matrix,1,NrActividades,Dif),
     flattenLists(Matrix,FlattenedMatrix),
-   
-    labeling([],FlattenedMatrix),
-    nl,nl,
-
-    write(FlattenedMatrix).
+    labeling([ffc,minimize(Dif)],FlattenedMatrix),
+    write(Matrix).
 
 
 
@@ -64,12 +55,13 @@ iterAux(Matrix,IndexInvestigador):-
 iterAux1(Matrix,IndexInvestigador,IndexMes,SumTotal):-
     duracaoProjecto(Dur),
     iter(Matrix,IndexMes,IndexInvestigador,1,SumMes),  %%SumMes é o total de horas que um investigador trabalha num mes
-    checkInvestigador(IndexInvestigador,SumMes,1),
+    ((mesFolga(IndexInvestigador,IndexMes));
+    checkInvestigador(IndexInvestigador,SumMes,1)),
     ((IndexMes1 is IndexMes +1,
     IndexMes1=<Dur,
     iterAux1(Matrix,IndexInvestigador,IndexMes1,SumTotal1),
     SumTotal #= SumMes + SumTotal1);
-    true).
+    SumTotal #=SumMes).
 
 
 %%ACTIVIDADES
@@ -80,7 +72,7 @@ iterAux1(Matrix,IndexInvestigador,IndexMes,SumTotal):-
 %%IndexInvestigador- Indice do investigador a ser avaliado
 %%IndexActivity- Indice da atividade
 %%SumMes- Soma do tempo que ele trabalha por mes em todas as atividades
-iter([],_,_,_,0).  
+iter([],_,_,_,0).
 iter([H|T],IndexMes, IndexInvestigador,IndexActivity,SumMes):-
     nth1(IndexInvestigador,H,CurrentInvest_Activity),%%encontra meses de investigador na actividade a ser iterada
     nth1(IndexMes,CurrentInvest_Activity,M),
@@ -96,7 +88,7 @@ iter([H|T],IndexMes, IndexInvestigador,IndexActivity,SumMes):-
 %%caso boolean =1 a variavel SumMes_ou_MaxMes é SumMes ,caso 2 é MaxMes
 checkInvestigador(IndexInvestigador,SumMes_ou_MaxMes,Boolean):-
     (
-        docente(X),member(IndexInvestigador,X),      
+        docente(X),member(IndexInvestigador,X),
         docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
         SumMes_ou_MaxMes in 0..HorasMesDocente
     );
@@ -111,6 +103,7 @@ checkInvestigador(IndexInvestigador,SumMes_ou_MaxMes,Boolean):-
 
 restricaoTempoDedicarProjeto(IndexInvestigador,SumTotal):-
     ((docenteTotalHorasProjecto(IndexInvestigador,HorasADedicar),
+    write('Tempo a dedicar ao projeto - docentes\n\n'),
     SumTotal #=HorasADedicar);
     true).
 
@@ -119,16 +112,88 @@ restricaoTempoDedicarProjeto(IndexInvestigador,SumTotal):-
 %% Variavel de Mes actual (a restringir)
 %% 
 a(M,IndexActivity,IndexInvestigador,IndexMes):- 
-    (
+    ((
         (mesFolga(IndexInvestigador,IndexMes);%%ve se indexMes e mes de folga
         (actividadesMeses(ActividadesMeses),
         nth1(IndexActivity,ActividadesMeses,CurrentActivityMeses),
         \+ member(IndexMes,CurrentActivityMeses))),
         M#=0
-      )
-    ;(
-        checkInvestigador(IndexInvestigador,M,2)
+      );
+    checkInvestigador(IndexInvestigador,M,2)).
+
+
+%%
+%%nth1(1,DuracaoActividades,NrHorasAtividade1),
+%%NrHorasAtividade1 #= somaDoc1 + somaCont1
+
+%% matrix 3d - acti, invest, meses DONE
+%%dimensao actividad - restriçao rigida das horas totais , mes em que nao se trabalha e optimizacao final(flex)
+%%restricao 1 ir a todos os inv numa activi e para cada mes restriçao rigida das horas totais  
+%%flexiveis - tipo carteiro pergui , para actividade e para invest
+
+retricoes_rigidas1(IndexInvestigador,MatrixH):-
+    (
+        docente(X),member(IndexInvestigador,X),      
+        docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
+        MatrixH in 0..HorasMesDocente
+    );
+    (
+        contratado(Y),member(IndexInvestigador,Y),
+        contratadoHorasMensais(IndexInvestigador,HorasMesContratado),
+        MatrixH #= HorasMesContratado
     ).
+
+
+
+
+%%Iterar sobre NrActividades e passar esse valor no param CurrentActivity
+iterarfinal(Matrix,IndexActivity,NrAtividades,Dif):-
+    nth1(IndexActivity,Matrix,CurrentActivityMatrix),
+    iterInvestigadores(CurrentActivityMatrix,SumMeses,DifInv),
+    duracaoActividades(X),nth1(IndexActivity,X,HorasNecessarias),
+    SumMeses #= HorasNecessarias,
+    ((IndexActivity1 is IndexActivity + 1,
+    IndexActivity1 =< NrAtividades,
+    iterarfinal(Matrix,IndexActivity1,NrAtividades,Dif1),
+    Dif #= DifInv-Dif1);
+    Dif #= 0).
+
+
+%params
+%%indice da actividade a verificar
+%%lista de ActividadesMeses da current actividade
+%%lista da matrix da current actividade
+%%Indice da CurrentActivityMatrix a ser verificado
+iterInvestigadores([],0,0).
+iterInvestigadores([H|T],SumMeses,DifInv):-
+    iterSomaInv(H,SomaInv),
+    iterInvestigadores(T,SumMeses1,DifInv1),
+    maximum(Maxi,H),
+    minimum(Mini,H),
+    DifInv#=Maxi-Mini-DifInv1,
+    SumMeses #= SomaInv + SumMeses1.
+
+
+iterSomaInv([],0).
+iterSomaInv([H|T],SomaInv):-
+    iterSomaInv(T,SomaInv1),
+    SomaInv #= H + SomaInv1.
+
+
+
+
+flattenLists(List, NewList):-
+        flattenList(List, NewListAux),
+        flattenList(NewListAux, NewList).
+
+flattenList([], []).
+flattenList([H|T], NewList):-
+        flattenList(T, Prev),
+        pushElementsToList(H, Prev, NewList).
+
+pushElementsToList([], R, R).
+pushElementsToList([H|T], Prev, [H|NewList]):-
+    pushElementsToList(T, Prev, NewList).
 
 
 
@@ -156,72 +221,3 @@ restricaoTotalHorasActividade([],0).
 restricaoTotalHorasActividade([H|T],Sum):-
     restricaoTotalHorasActividade(T,Sum1),
     Sum #= H + Sum1.
-
-%%
-%%nth1(1,DuracaoActividades,NrHorasAtividade1),
-%%NrHorasAtividade1 #= somaDoc1 + somaCont1
-
-%% matrix 3d - acti, invest, meses DONE
-%%dimensao actividad - restriçao rigida das horas totais , mes em que nao se trabalha e optimizacao final(flex)
-%%restricao 1 ir a todos os inv numa activi e para cada mes restriçao rigida das horas totais  
-%%flexiveis - tipo carteiro pergui , para actividade e para invest
-
-retricoes_rigidas1(IndexInvestigador,MatrixH):-
-    (
-        docente(X),member(IndexInvestigador,X),      
-        docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
-        MatrixH in 0..HorasMesDocente
-    );
-    (
-        contratado(Y),member(IndexInvestigador,Y),
-        contratadoHorasMensais(IndexInvestigador,HorasMesContratado),
-        MatrixH #= HorasMesContratado
-    ).
-
-
-
-
-%%Iterar sobre NrActividades e passar esse valor no param CurrentActivity
-iterarfinal(Matrix,IndexActivity,NrAtividades):-
-    nth1(IndexActivity,Matrix,CurrentActivityMatrix),
-    iterInvestigadores(CurrentActivityMatrix,SumMeses),
-    duracaoActividades(X),nth1(IndexActivity,X,HorasNecessarias),
-    SumMeses #= HorasNecessarias,
-    ((IndexActivity1 is IndexActivity + 1,
-    IndexActivity1 =< NrAtividades,
-    iterarfinal(Matrix,IndexActivity1,NrAtividades));
-    true).
-
-
-%params
-%%indice da actividade a verificar
-%%lista de ActividadesMeses da current actividade
-%%lista da matrix da current actividade
-%%Indice da CurrentActivityMatrix a ser verificado
-iterInvestigadores([],0).
-iterInvestigadores([H|T],SumMeses):-
-    iterSomaInv(H,SomaInv),
-    iterInvestigadores(T,SumMeses1),
-    SumMeses #= SomaInv + SumMeses1.
-
-
-iterSomaInv([],0).
-iterSomaInv([H|T],SomaInv):-
-    iterSomaInv(T,SomaInv1),
-    SomaInv #= H + SomaInv1.
-
-
-
-
-flattenLists(List, NewList):-
-        flattenList(List, NewListAux),
-        flattenList(NewListAux, NewList).
-
-flattenList([], []).
-flattenList([H|T], NewList):-
-        flattenList(T, Prev),
-        pushElementsToList(H, Prev, NewList).
-
-pushElementsToList([], R, R).
-pushElementsToList([H|T], Prev, [H|NewList]):-
-    pushElementsToList(T, Prev, NewList).

@@ -1,0 +1,10 @@
+nrInvestigadores(1).
+docente([1]).
+docenteMaxHorasMensais(1,12).
+docenteTotalHorasProjecto(1,100).
+mesFolga(1,6).
+duracaoProjecto(11).
+nrActividades(2).
+duracaoActividades([90,10]).
+actividadesMeses([[1,2,3,4,5,6,7,8,9,10,11],[11]]).
+contratado([]).
