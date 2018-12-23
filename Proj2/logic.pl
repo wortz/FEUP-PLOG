@@ -1,4 +1,4 @@
-:-include('setVars.pl').
+:-include('setVars4.pl').
 :-include('tablePrinter.pl').
 :-use_module(library(lists)).
 :-use_module(library(clpfd)).
@@ -27,7 +27,7 @@ func:-
     flattenLists(Matrix,FlattenedMatrix),
     write('lab'),nl,nl,
     statistics(walltime,_),
-    labeling([ff,bisect,down,minimize(Dif)],FlattenedMatrix),
+    labeling([ff,down,time_out(600000,Flag),minimize(Dif)],FlattenedMatrix),
     statistics(walltime,[_,ElapsedTime|_]),
     fd_statistics,
     write(ElapsedTime),nl,
@@ -187,7 +187,7 @@ iterInvestigadores([H|T],SumMeses,DifInv,IndexInvestigador,IndexActivity):-
     iterInvestigadores(T,SumMeses1,DifInv1,IndexInvestigador1,IndexActivity),
     maximum(Maxi,TemposNaoFolga),
     minimum(Mini,TemposNaoFolga),
-    DifInv#=Maxi-Mini+DifInv1,
+    DifInv#=Maxi-Mini+DifInv1
     SumMeses #= SomaInv + SumMeses1.
 
 %%itera pelos meses todos de uma atividade para um investigador e retorna a soma de todos os tempo e uma lista com todos os tempos em que ele trabalha
