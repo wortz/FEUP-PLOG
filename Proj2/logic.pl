@@ -1,4 +1,4 @@
-:-include('setVars2.pl').
+:-include('setVars.pl').
 :-include('tablePrinter.pl').
 :-use_module(library(lists)).
 :-use_module(library(clpfd)).
@@ -25,8 +25,12 @@ func:-
     iterAux(Matrix,1),
     iterarfinal(Matrix,1,NrActividades,Dif),
     flattenLists(Matrix,FlattenedMatrix),
-    write('lab'),
+    write('lab'),nl,nl,
+    statistics(walltime,_),
     labeling([ff,bisect,down,minimize(Dif)],FlattenedMatrix),
+    statistics(walltime,[_,ElapsedTime|_]),
+    fd_statistics,
+    write(ElapsedTime),nl,
     write(Matrix).
 
 
