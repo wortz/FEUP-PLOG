@@ -1,7 +1,8 @@
-:-include('setVars.pl').
+:-include('setVars2.pl').
 :-include('tablePrinter.pl').
 :-use_module(library(lists)).
 :-use_module(library(clpfd)).
+:-use_module(library(timeout)).
 %%uma
 set3dMatrixAux([],_).
 set3dMatrixAux([H|T],N):-
@@ -24,7 +25,8 @@ func:-
     iterAux(Matrix,1),
     iterarfinal(Matrix,1,NrActividades,Dif),
     flattenLists(Matrix,FlattenedMatrix),
-    labeling([ffc,minimize(Dif)],FlattenedMatrix),
+    write('lab'),
+    labeling([ff,bisect,down,minimize(Dif)],FlattenedMatrix),
     write(Matrix).
 
 
@@ -105,7 +107,6 @@ checkInvestigador(IndexInvestigador,SumMes_ou_MaxMes,Boolean):-
 %%SumTotal- Soma dos tempos onde vai ser aplicada a restrição
 restricaoTempoDedicarProjeto(IndexInvestigador,SumTotal):-
     ((docenteTotalHorasProjecto(IndexInvestigador,HorasADedicar),
-    write('Tempo a dedicar ao projeto - docentes\n\n'),
     SumTotal #=HorasADedicar);
     true).
 
@@ -165,7 +166,7 @@ iterarfinal(Matrix,IndexActivity,NrAtividades,Dif):-
     ((IndexActivity1 is IndexActivity + 1,
     IndexActivity1 =< NrAtividades,
     iterarfinal(Matrix,IndexActivity1,NrAtividades,Dif1),
-    Dif #= DifInv-Dif1);
+    Dif #= DifInv+Dif1);
     Dif #= DifInv).
 
 
@@ -177,13 +178,12 @@ iterarfinal(Matrix,IndexActivity,NrAtividades,Dif):-
 iterInvestigadores([],0,0,_,_).
 iterInvestigadores([H|T],SumMeses,DifInv,IndexInvestigador,IndexActivity):-
     iterSomaInv(H,SomaInv,IndexInvestigador,IndexActivity,1,TemposNaoFolga),
-    write('boas\n\n'),
     durAtividade(SomaInv,IndexInvestigador,IndexActivity),
     IndexInvestigador1 is IndexInvestigador +1,
     iterInvestigadores(T,SumMeses1,DifInv1,IndexInvestigador1,IndexActivity),
     maximum(Maxi,TemposNaoFolga),
     minimum(Mini,TemposNaoFolga),
-    DifInv#=Maxi-Mini-DifInv1,
+    DifInv#=Maxi-Mini+DifInv1,
     SumMeses #= SomaInv + SumMeses1.
 
 %%itera pelos meses todos de uma atividade para um investigador e retorna a soma de todos os tempo e uma lista com todos os tempos em que ele trabalha

@@ -10,7 +10,7 @@ docenteMaxHorasMensais(1,12).
 docenteTotalHorasProjecto(1,90).
 
 %%Docente com total de horas dedicadas a actividade (caso em que não existe)
-docenteTotalHorasActividade(1,60,1).
+docenteTotalHorasActividade(1,42,1).
 
 %%Docente (1) não trabalha no mes 6
 mesFolga(1,6).

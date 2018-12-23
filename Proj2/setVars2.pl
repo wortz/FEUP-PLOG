@@ -1,37 +1,30 @@
-nrInvestigadores(5).
+nrInvestigadores(3).
 
-docente([1,3]).
+docente([1]).
 
 
 docenteMaxHorasMensais(1,15).
-docenteTotalHorasProjecto(1,80).
+docenteTotalHorasProjecto(1,72).
 mesFolga(1,6).
-
-docenteMaxHorasMensais(3,15).
-docenteTotalHorasProjecto(3,100).
-mesFolga(3,6).
 
 
 docenteTotalHorasActividade(0,0,0).
 
 
 
-contratado([2,4,5]).
+contratado([2,3]).
 
 
-contratadoHorasMensais(2,120).
+contratadoHorasMensais(2,120). %%480
 mesFolga(2,6).
 
-contratadoHorasMensais(4,90).
-mesFolga(4,6).
-
-contratadoHorasMensais(5,100).
-mesFolga(5,8).
+contratadoHorasMensais(3,90). %%360
+mesFolga(3,6).
 
 
-duracaoProjecto(12).
+duracaoProjecto(10).
 
-nrActividades(5).
-duracaoActividades([580,1040,460,715,815]).
+nrActividades(3).
+duracaoActividades([371,622,339]).
 
-actividadesMeses([[1,2,3],[3,4,5,6,7],[2,3,7],[8,9,10],[10,11,12]]).
+actividadesMeses([[1,2,3],[3,4,5,6,7],[2,3,7]]).

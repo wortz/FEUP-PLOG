@@ -1,6 +1,6 @@
 nrInvestigadores(1).
 docente([1]).
-docenteMaxHorasMensais(1,12).
+docenteMaxHorasMensais(1,15).
 docenteTotalHorasProjecto(1,100).
 mesFolga(1,6).
 duracaoProjecto(11).
