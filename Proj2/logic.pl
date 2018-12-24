@@ -140,25 +140,6 @@ checkNaoTrabalha(IndexActivity,IndexInvestigador,IndexMes):-
 %%nth1(1,DuracaoActividades,NrHorasAtividade1),
 %%NrHorasAtividade1 #= somaDoc1 + somaCont1
 
-%% matrix 3d - acti, invest, meses DONE
-%%dimensao actividad - restriçao rigida das horas totais , mes em que nao se trabalha e optimizacao final(flex)
-%%restricao 1 ir a todos os inv numa activi e para cada mes restriçao rigida das horas totais  
-%%flexiveis - tipo carteiro pergui , para actividade e para invest
-
-retricoes_rigidas1(IndexInvestigador,MatrixH):-
-    (
-        docente(X),member(IndexInvestigador,X),      
-        docenteMaxHorasMensais(IndexInvestigador,HorasMesDocente),
-        MatrixH in 0..HorasMesDocente
-    );
-    (
-        contratado(Y),member(IndexInvestigador,Y),
-        contratadoHorasMensais(IndexInvestigador,HorasMesContratado),
-        MatrixH #= HorasMesContratado
-    ).
-
-
-
 
 %%Iterar sobre NrActividades e passar esse valor no param CurrentActivity
 iterarfinal(Matrix,IndexActivity,NrAtividades,Dif):-
