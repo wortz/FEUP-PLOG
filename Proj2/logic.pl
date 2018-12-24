@@ -136,9 +136,6 @@ checkNaoTrabalha(IndexActivity,IndexInvestigador,IndexMes):-
         \+ member(IndexMes,CurrentActivityMeses))).
 
 
-%%
-%%nth1(1,DuracaoActividades,NrHorasAtividade1),
-%%NrHorasAtividade1 #= somaDoc1 + somaCont1
 
 
 %%Iterar sobre NrActividades e passar esse valor no param CurrentActivity
