@@ -3,19 +3,19 @@
 :-use_module(library(lists)).
 :-use_module(library(clpfd)).
 :-use_module(library(timeout)).
-%%uma
+%%Trata de criar uma lista de tamanho n
 set3dMatrixAux([],_).
 set3dMatrixAux([H|T],N):-
     length(H,N),
     set3dMatrixAux(T,N).
 
-%%duas
+%%cria uma lista de listas de tamanho n
 set3dMatrix([],_).
 set3dMatrix([H|T],N):-
     set3dMatrixAux(H,N),
     set3dMatrix(T,N).
 
-func:-
+dedicacao:-
     nrInvestigadores(NrInvestigadores),
     nrActividades(NrActividades),   
     duracaoProjecto(NMeses),
@@ -25,13 +25,12 @@ func:-
     iterAux(Matrix,1),
     iterarfinal(Matrix,1,NrActividades,Dif),
     flattenLists(Matrix,FlattenedMatrix),
-    write('lab'),nl,nl,
     statistics(walltime,_),
-    labeling([ff,down,time_out(600000,Flag),minimize(Dif)],FlattenedMatrix),
+    labeling([ff,down,time_out(300000,Flag),minimize(Dif)],FlattenedMatrix),
     statistics(walltime,[_,ElapsedTime|_]),
     fd_statistics,
     write(ElapsedTime),nl,
-    write(Matrix).
+    printTable(Matrix).
 
 
 
@@ -209,7 +208,7 @@ iterSomaInv([H|T],SomaInv,IndexInvestigador,IndexActivity,IndexMes,TemposNaoFolg
 
 
 
-
+%%torna a lista de listas de listas em uma lista simples para utilização no labeling
 flattenLists(List, NewList):-
         flattenList(List, NewListAux),
         flattenList(NewListAux, NewList).
